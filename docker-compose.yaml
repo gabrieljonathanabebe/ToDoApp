@@ -1,24 +1,42 @@
 services:
+  db:
+    image: postgres:16
+    container_name: mytodo-db-container
+    environment:
+      POSTGRES_DB: mytodo
+      POSTGRES_USER: mytodo
+      POSTGRES_PASSWORD: mytodo
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
-    image: mytodo-backend:v0.1.0
+    image: mytodo-backend:v0.2.0
     container_name: mytodo-backend-container
+    depends_on:
+      - db
     ports:
       - "8000:8000"
     environment:
-      DATA_DIR: /app/data
-    volumes:
-      - ./data:/app/data
+      DATABASE_URL: postgresql+psycopg://mytodo:mytodo@db:5432/mytodo
+      FRONTEND_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    image: mytodo-frontend:v0.1.0
+    image: mytodo-frontend:v0.2.0
     container_name: mytodo-frontend-container
     depends_on:
       - backend
     ports:
       - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+
+volumes:
+  postgres_data:
