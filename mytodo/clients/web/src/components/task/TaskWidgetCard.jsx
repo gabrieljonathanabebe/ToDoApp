@@ -2,7 +2,7 @@
 
 import TaskStatusToggle from './TaskStatusToggle'
 import TaskMeta from './TaskMeta'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import TaskActionMenu from './TaskActionsMenu'
 import TaskInfoModal from './TaskInfoModal'
 import TaskPriorityStars from './TaskPriorityStars'
@@ -17,12 +17,8 @@ function TaskWidgetCard({
   onUpdateTaskDue,
 }) {
   const [isEditing, setIsEditing] = useState(false)
-  const [editValue, setEditValue] = useState(task.description)
+  const [editValue, setEditValue] = useState('')
   const [showInfo, setShowInfo] = useState(false)
-
-  useEffect(() => {
-    setEditValue(task.description)
-  }, [task.description])
 
   async function handleSave() {
     const trimmed = editValue.trim()
@@ -43,7 +39,7 @@ function TaskWidgetCard({
 
   function handleCancel() {
     setEditValue(task.description)
-    setIsEditing(faöse)
+    setIsEditing(false)
   }
 
   return (
@@ -84,7 +80,10 @@ function TaskWidgetCard({
         ) : (
           <h3
             className='task-widget-title is-editable'
-            onClick={() => setIsEditing(true)}
+            onClick={() => {
+              setEditValue(task.description)
+              setIsEditing(true)
+            }}
             title='Click to edit'
           >
             {task.description}

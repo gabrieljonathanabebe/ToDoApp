@@ -1,16 +1,12 @@
 // mytodo/clients/web/src/components/task/DueDateEditor.jsx
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { CalendarDays } from 'lucide-react'
 import { formatDueDate } from '../../utils/formatters'
 
 function DueDateEditor({ value, onChange }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(value ?? '')
-
-  useEffect(() => {
-    setEditValue(value ?? '')
-  }, [value])
 
   async function handleSave(newValue) {
     if (newValue === (value ?? '')) {
@@ -53,7 +49,10 @@ function DueDateEditor({ value, onChange }) {
     <button
       type='button'
       className='due-date-display'
-      onClick={() => setIsEditing(true)}
+      onClick={() => {
+        setEditValue(value ?? '')
+        setIsEditing(true)
+      }}
       title='Click to edit due date'
     >
       <CalendarDays className='meta-icon' size={14} strokeWidth={2} />

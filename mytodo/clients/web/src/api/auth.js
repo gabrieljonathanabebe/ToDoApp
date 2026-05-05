@@ -1,6 +1,6 @@
 // mytodo/clients/web/src/api/auth.js
 
-import { apiRequest, postJson } from './client'
+import { postJson } from './client'
 import { apiRoutes } from './routes'
 
 

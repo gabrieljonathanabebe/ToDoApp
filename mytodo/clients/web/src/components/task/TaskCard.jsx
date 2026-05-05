@@ -1,6 +1,6 @@
 // mytodo/clients/web/src/components/task/TaskCard.jsx
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import StatusBadge from './StatusBadge'
 import TaskStatusToggle from './TaskStatusToggle'
 import TaskDeleteButton from './TaskDeleteButton'
@@ -19,12 +19,8 @@ function TaskCard({
   onUpdateTaskDue
 }) {
   const [isEditing, setIsEditing] = useState(false)
-  const [editValue, setEditValue] = useState(task.description)
+  const [editValue, setEditValue] = useState('')
   const [showInfo, setShowInfo] = useState(false)
-
-  useEffect(() => {
-    setEditValue(task.description)
-  }, [task.description])
 
   async function handleSave() {
     const trimmed = editValue.trim()
@@ -71,7 +67,10 @@ function TaskCard({
           ) : (
             <h3
               className='task-card-title is-editable'
-              onClick={() => setIsEditing(true)}
+              onClick={() => {
+                setEditValue(task.description)
+                setIsEditing(true)
+              }}
               title='Click to edit'
             >
               {task.description}
