@@ -14,7 +14,6 @@ import { LayoutDashboard } from 'lucide-react'
 
 
 function DashboardPage({
-  currentUser,
   workspaceStats,
   toDoSummaries = [],
   toDoDetails = [],

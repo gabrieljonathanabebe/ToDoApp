@@ -37,9 +37,10 @@ function ToDoSummaryPage({
 		goNext
 	} = usePagination(todos, 5)
 
-	if (error) {
-		return <ErrorState message={error} />
+	if (error || actionError) {
+		return <ErrorState message={error || actionError} />
 	}
+
 
 	if (loading) {
 		return (

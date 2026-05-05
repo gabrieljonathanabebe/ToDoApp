@@ -23,7 +23,7 @@ function App() {
 	// ===== HOOKS ==========================================================
 	const { currentUser, loginUser, logoutUser } = useSessionState()
 	const {
-		page, currentToDoId, navigateTo, openToDo, clearNavigation
+		page, currentToDoId, navigateTo, openToDo
 	} = useNavigationState()
 
 	const {
@@ -101,7 +101,6 @@ function App() {
 		if (page === 'dashboard') {
 			return (
 				<DashboardPage
-					currentUser={currentUser}
 					workspaceStats={workspaceStats}
 					toDoSummaries={toDoSummaries}
 					toDoDetails={toDoDetails}

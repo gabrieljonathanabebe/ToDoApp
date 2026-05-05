@@ -1,11 +1,12 @@
 // mytodo/clients/web/src/hooks/usePagination.js
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 
 export function usePagination(items, itemsPerPage = 5) {
-  const [page, setPage] = useState(1)
+  const [requestedPage, setPage] = useState(1)
   const totalPages = Math.ceil(items.length / itemsPerPage)
+  const page = Math.min(requestedPage, totalPages || 1)
   const startIndex = (page - 1) * itemsPerPage
   const paginatedItems = items.slice(startIndex, startIndex + itemsPerPage)
 
@@ -17,13 +18,12 @@ export function usePagination(items, itemsPerPage = 5) {
     if (page < totalPages) setPage(page + 1)
   }
 
-  useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages || 1)
-    }
-  }, [items, totalPages, page])
-
   return {
-    page, totalPages, paginatedItems, goPrevious, goNext, setPage
+    page,
+    totalPages,
+    paginatedItems,
+    goPrevious,
+    goNext,
+    setPage,
   }
 }
