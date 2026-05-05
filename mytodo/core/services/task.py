@@ -2,107 +2,151 @@
 
 from datetime import date
 
-from mytodo.domain.todo_list import ToDoList
-from mytodo.domain.models import Task, Status
-from mytodo.core.results import Result, Code
-from mytodo.core.services.base import BaseToDoService
-from mytodo.core.services.errors import NotFoundError, InvalidInputError
-from mytodo.core.services.messages import ToDoMessage
-from mytodo.core.services.responses import Success, ok, created, resultify
+from mytodo.core.services.base import BaseService
+from mytodo.core.errors import NotFoundError, InvalidInputError
+from mytodo.core.messages import ToDoMessage
+from mytodo.core.responses import Success, created, ok, resultify
+from mytodo.domain import Status, Priority, ToDoWorkspace
+from mytodo.infra.repositories import TaskRepository, ToDoRepository
 
 
-class TaskService(BaseToDoService):
+class TaskService(BaseService):
+    def __init__(
+        self,
+        task_repo: TaskRepository,
+        todo_repo: ToDoRepository,
+    ):
+        super().__init__(todo_repo=todo_repo)
+        self.task_repo = task_repo
+
     @resultify
     def create_task(
         self,
-        todo: ToDoList,
+        user_id: str,
+        todo_id: str,
         description: str,
-        priority: str,
-        due: str | None,
+        priority: int,
+        due: date | None,
         notes: str | None,
-    ) -> Success[Task]:
-        new_task = todo.create_task(
-            description=description, priority=priority, due=due, notes=notes
+    ) -> Success[ToDoWorkspace]:
+        valid_todo_id = self.require_todo_id(user_id, todo_id)
+        task = self.task_repo.create_task(
+            todo_id=valid_todo_id,
+            description=description,
+            priority=priority,
+            due=due,
+            notes=notes,
         )
-        self._touch_and_save_todo(todo)
-        return created(ToDoMessage.task_created(new_task.id), data=new_task)
+        workspace = self.todo_repo.get_workspace(user_id)
+        return created(ToDoMessage.task_created(task.id), data=workspace)
 
     @resultify
-    def delete_task(self, todo: ToDoList, task_id: str) -> Success[None]:
-        parsed_task_id = self._parse_task_id(task_id)
-        is_deleted = todo.delete_task(parsed_task_id)
+    def delete_task(
+        self, user_id: str, todo_id: str, task_id: str
+    ) -> Success[ToDoWorkspace]:
+        valid_todo_id = self.require_todo_id(user_id, todo_id)
+        is_deleted = self.task_repo.delete_task(valid_todo_id, task_id)
         if not is_deleted:
             raise NotFoundError(ToDoMessage.task_not_found(task_id))
-        self._touch_and_save_todo(todo)
-        return ok(ToDoMessage.task_deleted(task_id))
-
-    @resultify
-    def sort_tasks(self, todo: ToDoList, key: str, reverse: bool) -> Success[None]:
-        try:
-            todo.sort_tasks(key, reverse)
-        except AttributeError:
-            raise InvalidInputError(f"Key {key} not found.")
-        self._touch_and_save_todo(todo)
-        return ok(f"Sorting by {key}")
-
-    @resultify
-    def update_task_description(
-        self, todo: ToDoList, task_id: str, description: str
-    ) -> Success[None]:
-        parsed_task_id = self._parse_task_id(task_id)
-        is_updated = todo.update_task_description(parsed_task_id, description)
-        if not is_updated:
-            raise NotFoundError(ToDoMessage.task_not_found(task_id))
-        self._touch_and_save_todo(todo)
-        return ok(ToDoMessage.task_updated(task_id))
-
-    @resultify
-    def update_task_priority(
-        self, todo: ToDoList, task_id: str, priority: int
-    ) -> Success[None]:
-        parsed_task_id = self._parse_task_id(task_id)
-        is_updated = todo.update_task_priority(parsed_task_id, priority)
-        if not is_updated:
-            raise NotFoundError(ToDoMessage.task_not_found(task_id))
-        self._touch_and_save_todo(todo)
-        return ok(ToDoMessage.task_updated(task_id))
+        workspace = self.todo_repo.get_workspace(user_id)
+        return ok(ToDoMessage.task_deleted(task_id), data=workspace)
 
     @resultify
     def update_task_status(
-        self, todo: ToDoList, task_id: str, status: str
-    ) -> Success[None]:
-        parsed_task_id = self._parse_task_id(task_id)
+        self,
+        user_id: str,
+        todo_id: str,
+        task_id: str,
+        status: str,
+    ) -> Success[ToDoWorkspace]:
+        valid_todo_id = self.require_todo_id(user_id, todo_id)
         try:
             target_status = Status(status)
         except ValueError:
             raise InvalidInputError(ToDoMessage.invalid_status(status))
-        is_updated = todo.set_status(parsed_task_id, target_status)
-        if not is_updated:
+        task = self.task_repo.update_task_status(
+            todo_id=valid_todo_id,
+            task_id=task_id,
+            status=target_status,
+        )
+        if task is None:
             raise NotFoundError(ToDoMessage.task_not_found(task_id))
-        self._touch_and_save_todo(todo)
-        return ok(ToDoMessage.task_status_updated(task_id, target_status.value))
+        workspace = self.todo_repo.get_workspace(user_id)
+        return ok(
+            ToDoMessage.task_status_updated(task.id, task.status.value),
+            data=workspace,
+        )
+
+    @resultify
+    def update_task_description(
+        self, user_id: str, todo_id: str, task_id: str, description: str
+    ) -> Success[ToDoWorkspace]:
+        valid_todo_id = self.require_todo_id(user_id, todo_id)
+        task = self.task_repo.update_task_description(
+            todo_id=valid_todo_id,
+            task_id=task_id,
+            description=description,
+        )
+        if task is None:
+            raise NotFoundError(ToDoMessage.task_not_found(task_id))
+        workspace = self.todo_repo.get_workspace(user_id)
+        return ok(ToDoMessage.task_updated(task.id), data=workspace)
+
+    @resultify
+    def update_task_priority(
+        self,
+        user_id: str,
+        todo_id: str,
+        task_id: str,
+        priority: int,
+    ) -> Success[ToDoWorkspace]:
+        valid_todo_id = self.require_todo_id(user_id, todo_id)
+        try:
+            target_priority = Priority(priority)
+        except ValueError:
+            raise InvalidInputError(ToDoMessage.invalid_priority(priority))
+        task = self.task_repo.update_task_priority(
+            todo_id=valid_todo_id,
+            task_id=task_id,
+            priority=target_priority.value,
+        )
+        if task is None:
+            raise NotFoundError(ToDoMessage.task_not_found(task_id))
+        workspace = self.todo_repo.get_workspace(user_id)
+        return ok(ToDoMessage.task_updated(task.id), data=workspace)
 
     @resultify
     def update_task_due(
-        self, todo: ToDoList, task_id: str, due: date | None
-    ) -> Success[None]:
-        parsed_task_id = self._parse_task_id(task_id)
-        is_updated = todo.update_task_due(parsed_task_id, due)
-        if not is_updated:
+        self,
+        user_id: str,
+        todo_id: str,
+        task_id: str,
+        due: date | None,
+    ) -> Success[ToDoWorkspace]:
+        valid_todo_id = self.require_todo_id(user_id, todo_id)
+        task = self.task_repo.update_task_due(
+            todo_id=valid_todo_id,
+            task_id=task_id,
+            due=due,
+        )
+        if task is None:
             raise NotFoundError(ToDoMessage.task_not_found(task_id))
-        self._touch_and_save_todo(todo)
-        return ok(ToDoMessage.task_updated(task_id))
+        workspace = self.todo_repo.get_workspace(user_id)
+        return ok(ToDoMessage.task_updated(task.id), data=workspace)
 
     @resultify
-    def toggle_status(self, todo: ToDoList, task_id: str) -> Success[None]:
-        parsed_task_id = self._parse_task_id(task_id)
-        is_toggled = todo.toggle_status(parsed_task_id)
-        if not is_toggled:
-            raise NotFoundError(ToDoMessage.task_not_found(task_id))
-        self._touch_and_save_todo(todo)
-        return ok(ToDoMessage.task_status_toggled(task_id))
-
-    def assign_new_ids(self, todo: ToDoList) -> Result[None]:
-        count = todo.assign_new_ids()
-        self._touch_and_save_todo(todo)
-        return Result(Code.OK, f"Reassigned {count} IDs.")
+    def update_task_order(
+        self,
+        user_id: str,
+        todo_id: str,
+        positions_by_task_id: dict[str, int],
+    ) -> Success[ToDoWorkspace]:
+        valid_todo_id = self.require_todo_id(user_id, todo_id)
+        tasks = self.task_repo.update_task_order(
+            todo_id=valid_todo_id,
+            positions_by_task_id=positions_by_task_id,
+        )
+        if tasks is None:
+            raise NotFoundError(ToDoMessage.tasks_not_found())
+        workspace = self.todo_repo.get_workspace(user_id)
+        return ok(ToDoMessage.task_order_updated(), data=workspace)

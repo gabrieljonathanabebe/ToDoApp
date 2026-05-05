@@ -13,7 +13,12 @@ import PageHeader from '../components/common/PageHeader.jsx'
 
 
 function ToDoSummaryPage({
-	currentUser, todos, loading, error, loadTodos, onOpenToDo
+	currentUser,
+	todos,
+	loading,
+	error,
+	setWorkspaceState,
+	onOpenToDo,
 }) {
 	const {
 		error: actionError,
@@ -22,7 +27,7 @@ function ToDoSummaryPage({
 		createError,
 		handleCreateToDo,
 		handleDeleteToDo,
-	} = useToDoSummaryActions(currentUser, loadTodos, onOpenToDo)
+	} = useToDoSummaryActions(currentUser, setWorkspaceState, onOpenToDo)
 
 	const {
 		page,

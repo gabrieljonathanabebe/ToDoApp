@@ -15,10 +15,15 @@ import { LayoutDashboard } from 'lucide-react'
 
 function DashboardPage({
   currentUser,
+  workspaceStats,
   toDoSummaries = [],
   toDoDetails = [],
 }) {
-  const overview = getOverviewStats(toDoSummaries, toDoDetails)
+  const overview = getOverviewStats(
+    workspaceStats,
+    toDoSummaries,
+    toDoDetails
+  )
   const statusBreakdown = getStatusBreakdown(toDoDetails)
   const priorityBreakdown = getPriorityBreakdown(toDoDetails)
   const averageLeadTime = getAverageLeadTime(toDoDetails)

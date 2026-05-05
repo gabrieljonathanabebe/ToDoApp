@@ -6,6 +6,13 @@ import HomePage from './pages/HomePage'
 import ToDoSummaryPage from './pages/ToDoSummaryPage'
 import DashboardPage from './pages/DashboardPage'
 import ToDoDetailPage from './pages/toDoDetail/ToDoDetailPage'
+import {
+	getSummaries,
+	getToDos,
+	getToDoById,
+	getSummaryById,
+	getStats
+} from './selectors/workspaceSelectors'
 import { useWorkspaceData } from './hooks/useWorkspaceData'
 import { useNavigationState } from './hooks/useNavigationState'
 import { useSessionState } from './hooks/useSessionState'
@@ -20,19 +27,20 @@ function App() {
 	} = useNavigationState()
 
 	const {
-		toDoSummaries,
-		toDoDetails,
+		workspace,
 		loading,
 		error,
 		loadWorkspace,
-		refreshSummaries,
-		refreshToDo,
-		getToDoDetail,
+		setWorkspaceState,
 		clearWorkspace,
 	} = useWorkspaceData()
 
-	const currentToDo =
-		toDoSummaries.find((toDo) => toDo.id === currentToDoId) ?? null
+	const toDoSummaries = getSummaries(workspace)
+	const toDoDetails = getToDos(workspace)
+	const currentToDo = getSummaryById(workspace, currentToDoId)
+	const currentToDoDetail = getToDoById(workspace, currentToDoId)
+	const workspaceStats = getStats(workspace)
+
 
 	function handleLogin(user) {
 		loginUser(user)
@@ -70,6 +78,7 @@ function App() {
 			return (
 				<HomePage
 					currentUser={currentUser}
+					workspaceStats={workspaceStats}
 					toDoSummaries={toDoSummaries}
 					toDoDetails={toDoDetails}
 				/>
@@ -83,7 +92,7 @@ function App() {
 					todos={toDoSummaries}
 					loading={loading}
 					error={error}
-					loadTodos={() => refreshSummaries(currentUser)}
+					setWorkspaceState={setWorkspaceState}
 					onOpenToDo={openToDo}
 				/>
 			)
@@ -93,6 +102,7 @@ function App() {
 			return (
 				<DashboardPage
 					currentUser={currentUser}
+					workspaceStats={workspaceStats}
 					toDoSummaries={toDoSummaries}
 					toDoDetails={toDoDetails}
 				/>
@@ -104,9 +114,8 @@ function App() {
 				<ToDoDetailPage
 					currentUser={currentUser}
 					currentToDo={currentToDo}
-					initialToDoDetail={getToDoDetail(currentToDo?.id)}
-					refreshToDos={() => refreshSummaries(currentUser)}
-					refreshCurrentToDo={() => refreshToDo(currentUser, currentToDo?.id)}
+					initialToDoDetail={currentToDoDetail}
+					setWorkspaceState={setWorkspaceState}
 				/>
 			)
 		}

@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from mytodo.clients.api.routes import auth, todo_summary, todo_detail
+from mytodo.clients.api.routes import auth, task, todo
 import mytodo.core.config as cfg
 
 
@@ -29,9 +29,7 @@ def health() -> dict[str, str]:
 
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(todo.router, prefix="/users/{username}/todos", tags=["todo"])
 app.include_router(
-    todo_summary.router, prefix="/users/{username}/todos", tags=["todo-summary"]
-)
-app.include_router(
-    todo_detail.router, prefix="/users/{username}/todos/{todo_id}", tags=["todo-detail"]
+    task.router, prefix="/users/{username}/todos/{todo_id}", tags=["task"]
 )

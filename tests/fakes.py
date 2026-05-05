@@ -1,49 +1,46 @@
-# tests/fakes.py
+from datetime import datetime, timezone
+from uuid import uuid4
 
-from mytodo.domain.todo_list import ToDoList
-from mytodo.domain.models import ToDoSummary
+from mytodo.domain import ToDoDetail, ToDoWorkspace
 
 
-class FakeRepo:
+class FakeToDoRepo:
     def __init__(self):
-        self.todos_by_id: dict[str, ToDoList] = {}
-        self.todo_summaries_by_id: dict[str, ToDoSummary] = {}
+        self.workspaces_by_user_id: dict[str, ToDoWorkspace] = {}
 
-    # ===== TODO ==========================================================
-    def load_todo(self, todo_id: str) -> ToDoList | None:
-        return self.todos_by_id.get(todo_id)
+    def get_todo_id(self, user_id: str, todo_id: str) -> str | None:
+        workspace = self.get_workspace(user_id)
+        return next((todo.id for todo in workspace.todos if todo.id == todo_id), None)
 
-    def save_todo(self, todo: ToDoList) -> None:
-        self.todos_by_id[todo.id] = todo
-
-    def delete_todo(self, todo_id: str) -> bool:
-        deleted_todo = self.todos_by_id.pop(todo_id, None)
-        self.todo_summaries_by_id.pop(todo_id, None)
-        return deleted_todo is not None
-
-    # ===== TODO SUMMARY ==================================================
-    def register_todo_summary(self, todo: ToDoList) -> None:
-        self.todo_summaries_by_id[todo.id] = ToDoSummary.from_todo(todo)
-
-    def update_todo_summary(self, todo: ToDoList) -> None:
-        self.todo_summaries_by_id[todo.id] = ToDoSummary.from_todo(todo)
-
-    def get_todo_summary_by_id(self, todo_id: str) -> ToDoSummary | None:
-        return self.todo_summaries_by_id.get(todo_id)
-
-    def get_todo_summary_by_title(self, title: str) -> ToDoSummary | None:
-        return next(
-            (
-                summary
-                for summary in self.todo_summaries_by_id.values()
-                if summary.title == title
-            ),
-            None,
+    def get_workspace(self, user_id: str) -> ToDoWorkspace:
+        return self.workspaces_by_user_id.setdefault(
+            user_id,
+            ToDoWorkspace(todos=[]),
         )
 
-    def get_todos(self) -> list[ToDoSummary]:
-        return sorted(
-            self.todo_summaries_by_id.values(),
-            key=lambda summary: summary.updated_at,
-            reverse=True,
+    def get_todo_detail(self, user_id: str, todo_id: str) -> ToDoDetail | None:
+        workspace = self.get_workspace(user_id)
+        return next((todo for todo in workspace.todos if todo.id == todo_id), None)
+
+    def create_todo(self, user_id: str, title: str) -> ToDoDetail:
+        workspace = self.get_workspace(user_id)
+        now = datetime.now(timezone.utc)
+        todo = ToDoDetail(
+            id=str(uuid4()),
+            title=title,
+            position=len(workspace.todos) + 1,
+            tasks=[],
+            created_at=now,
+            updated_at=now,
         )
+        workspace.todos.append(todo)
+        return todo
+
+    def delete_todo(self, user_id: str, todo_id: str) -> bool:
+        workspace = self.get_workspace(user_id)
+        original_count = len(workspace.todos)
+        workspace.todos = [todo for todo in workspace.todos if todo.id != todo_id]
+        return len(workspace.todos) != original_count
+
+
+FakeRepo = FakeToDoRepo

@@ -4,7 +4,11 @@ import { useState } from "react";
 import { createToDo, deleteToDo } from "../api/toDoSummary";
 
 
-export function useToDoSummaryActions(currentUser, loadTodos, onOpenToDo) {
+export function useToDoSummaryActions(
+  currentUser,
+  setWorkspaceState,
+  onOpenToDo
+) {
   const [error, setError] = useState('')
   const [newTitle, setNewTitle] = useState('')
   const [createError, setCreateError] = useState('')
@@ -16,10 +20,16 @@ export function useToDoSummaryActions(currentUser, loadTodos, onOpenToDo) {
       return
     }
     try {
-      const createdToDo = await createToDo(currentUser.username, newTitle.trim())
+      const title = newTitle.trim()
+      const workspace = await createToDo(currentUser.username, title)
+      setWorkspaceState(workspace)
       setNewTitle('')
-      await loadTodos()
-      onOpenToDo?.(createdToDo)
+      const createdToDo = workspace.todo_summaries.find(
+        (todo) => todo.title === title
+      )
+      if (createdToDo) {
+        onOpenToDo?.(createdToDo)
+      }
     } catch (err) {
       setCreateError(err.message)
     }
@@ -30,8 +40,8 @@ export function useToDoSummaryActions(currentUser, loadTodos, onOpenToDo) {
     if (!confirmed) return
     setError('')
     try {
-      await deleteToDo(currentUser.username, todoId)
-      await loadTodos()
+      const workspace = await deleteToDo(currentUser.username, todoId)
+      setWorkspaceState(workspace)
     } catch (err) {
       setError(err.message)
     }

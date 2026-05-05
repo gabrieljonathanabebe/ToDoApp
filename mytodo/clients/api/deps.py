@@ -1,23 +1,51 @@
 # mytodo/clients/api/deps.py
 
-import mytodo.core.factories as factories
+from collections.abc import Generator
+
+from fastapi import Depends
+from sqlalchemy.orm import Session
+
+from mytodo.infra.db.session import SessionLocal
 from mytodo.clients.api import http_results
-from mytodo.core.factories import ToDoServices
-from mytodo.core.services import UserService
-from mytodo.domain.todo_list import ToDoList
+from mytodo.core.results import Code, Result
+from mytodo.core.services import UserService, ToDoService, TaskService
+from mytodo.core.messages import ToDoMessage
+from mytodo.domain import User
+from mytodo.infra.repositories import UserRepository, ToDoRepository, TaskRepository
 
 
-def get_user_service() -> UserService:
-    return factories.build_user_service()
+def get_db_session() -> Generator[Session, None, None]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
-def get_todo_services(username: str) -> ToDoServices:
-    return factories.build_todo_services(username)
+def get_user_service(
+    db: Session = Depends(get_db_session),
+) -> UserService:
+    return UserService(user_repo=UserRepository(db))
 
 
-def get_open_todo(username: str, todo_id: str) -> tuple[ToDoServices, ToDoList]:
-    services = get_todo_services(username)
-    todo_res = services.todos.open_todo(todo_id)
-    if not todo_res.ok or todo_res.data is None:
-        http_results.raise_http_error(todo_res)
-    return services, todo_res.data
+def get_current_user(
+    username: str,
+    db: Session = Depends(get_db_session),
+) -> User:
+    repo = UserRepository(db)
+    user = repo.get_by_username(username)
+    if user is None:
+        result = Result(Code.NOT_FOUND, ToDoMessage.user_not_found(username))
+        http_results.raise_http_error(result)
+    return user
+
+
+def get_todo_service(db: Session = Depends(get_db_session)) -> ToDoService:
+    return ToDoService(todo_repo=ToDoRepository(db))
+
+
+def get_task_service(db: Session = Depends(get_db_session)) -> TaskService:
+    return TaskService(
+        task_repo=TaskRepository(db),
+        todo_repo=ToDoRepository(db),
+    )

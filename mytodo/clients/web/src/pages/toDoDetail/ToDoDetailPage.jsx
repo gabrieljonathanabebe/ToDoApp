@@ -22,8 +22,7 @@ function ToDoDetailPage({
 	currentUser,
 	currentToDo,
 	initialToDoDetail,
-	refreshToDos,
-	refreshCurrentToDo,
+	setWorkspaceState,
 }) {
 	const {
 		toDoDetail,
@@ -47,8 +46,7 @@ function ToDoDetailPage({
 		handleUpdateTaskPriority,
 		handleUpdateTaskDue,
 	} = useToDoDetail(
-		currentUser, currentToDo, initialToDoDetail,
-		refreshToDos, refreshCurrentToDo
+		currentUser, currentToDo, initialToDoDetail, setWorkspaceState
 	)
 
 	const [showCreateTaskForm, setShowCreateTaskForm] = useState(false)
@@ -83,7 +81,7 @@ function ToDoDetailPage({
 		paginatedItems: paginatedTasks,
 		goPrevious,
 		goNext,
-	} = usePagination(filteredTasks, 7)
+	} = usePagination(filteredTasks, 9)
 
 	if (error) {
 		return <ErrorState message={error} />

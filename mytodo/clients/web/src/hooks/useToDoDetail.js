@@ -1,11 +1,11 @@
 // mytodo/clients/web/src/hooks/useToDoDetail.js
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   createTask,
   deleteTask,
   updateTaskStatus,
-  sortTasks,
+  updateTaskOrder,
   updateTaskDescription,
   updateTaskPriority,
   updateTaskDue,
@@ -16,10 +16,9 @@ export function useToDoDetail(
   currentUser,
   currentToDo,
   initialToDoDetail,
-  refreshToDos,
-  refreshCurrentToDo
+  setWorkspaceState,
 ) {
-  const [toDoDetail, setToDoDetail] = useState(initialToDoDetail ?? null)
+  const toDoDetail = initialToDoDetail ?? null
   const [error, setError] = useState('')
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState('2')
@@ -27,20 +26,6 @@ export function useToDoDetail(
   const [notes, setNotes] = useState('')
   const [showNotes, setShowNotes] = useState(false)
   const [createError, setCreateError] = useState('')
-
-  // ===== SYNC DETAIL FROM CENTRAL WORKSPACE ============================
-  useEffect(() => {
-    setToDoDetail(initialToDoDetail ?? null)
-  }, [initialToDoDetail])
-
-
-  // ===== FALLBACK FOR NEW TODO WITHOUT DETAIL DATA =====================
-  useEffect(() => {
-    if (!currentToDo?.id) return
-    if (initialToDoDetail) return
-
-    refreshCurrentToDo?.()
-  }, [currentToDo?.id, initialToDoDetail, refreshCurrentToDo])
 
 
   // ===== HANDLE CREATE TASK ============================================
@@ -53,21 +38,18 @@ export function useToDoDetail(
     }
 
     try {
-      await createTask(currentUser.username, currentToDo.id, {
+      const workspace = await createTask(currentUser.username, currentToDo.id, {
         description: description.trim(),
         priority: Number(priority),
         due: due || null,
         notes: notes?.trim() ? notes : null,
       })
-
+      setWorkspaceState(workspace)
       setDescription('')
       setPriority('2')
       setDue('')
       setNotes('')
       setShowNotes(false)
-
-      await refreshCurrentToDo?.()
-      await refreshToDos?.()
     } catch (err) {
       setCreateError(err.message)
     }
@@ -79,9 +61,10 @@ export function useToDoDetail(
     if (!confirmed) return
 
     try {
-      await deleteTask(currentUser.username, currentToDo.id, taskId)
-      await refreshCurrentToDo?.()
-      await refreshToDos?.()
+      const workspace = await deleteTask(
+        currentUser.username, currentToDo.id, taskId
+      )
+      setWorkspaceState(workspace)
     } catch (err) {
       setError(err.message)
     }
@@ -100,46 +83,77 @@ export function useToDoDetail(
     }
 
     try {
-      await updateTaskStatus(
+      const workspace = await updateTaskStatus(
         currentUser.username,
         currentToDo.id,
         task.id,
         newStatus
       )
-      await refreshCurrentToDo?.()
-      await refreshToDos?.()
+      setWorkspaceState(workspace)
     } catch (err) {
       setError(err.message)
     }
   }
 
   // ===== HANDLE SORT TASKS =============================================
+  function compareTasksBy(key) {
+    const priorityWeight = {
+      low: 1,
+      medium: 2,
+      high: 3,
+    }
+    return (left, right) => {
+      if (key === 'due') {
+        if (!left.due && !right.due) return 0
+        if (!left.due) return 1
+        if (!right.due) return -1
+        return new Date(left.due) - new Date(right.due)
+      }
+      if (key === 'priority') {
+        return (priorityWeight[left.priority] ?? 0) -
+          (priorityWeight[right.priority] ?? 0)
+      }
+      return String(left[key] ?? '').localeCompare(
+        String(right[key] ?? '')
+      )
+    }
+  }
+
+
   async function handleSortTasks(key, reverse = false) {
     try {
-      await sortTasks(
+      const sortedTasks = [...(toDoDetail?.tasks ?? [])]
+        .sort(compareTasksBy(key))
+      if (reverse) {
+        sortedTasks.reverse()
+      }
+      const items = sortedTasks.map((task, index) => ({
+        id: task.id,
+        position: index + 1,
+      }))
+      const workspace = await updateTaskOrder(
         currentUser.username,
         currentToDo.id,
-        key,
-        reverse
+        items
       )
-      await refreshCurrentToDo?.()
-      await refreshToDos?.()
+      setWorkspaceState(workspace)
     } catch (err) {
       setError(err.message)
     }
   }
 
+
+
   // ===== HANDLE UPDATE TASK DESCRIPTION ================================
   async function handleUpdateTaskDescription(taskId, description) {
     try {
-      await updateTaskDescription(
+      const workspace = await updateTaskDescription(
         currentUser.username,
         currentToDo.id,
         taskId,
         description
       )
-      await refreshCurrentToDo?.()
-      await refreshToDos?.()
+      setWorkspaceState(workspace)
     } catch (err) {
       setError(err.message)
     }
@@ -148,14 +162,13 @@ export function useToDoDetail(
   // ===== HANDLE UPDATE TASK PRIORITY ===================================
   async function handleUpdateTaskPriority(taskId, priority) {
     try {
-      await updateTaskPriority(
+      const workspace = await updateTaskPriority(
         currentUser.username,
         currentToDo.id,
         taskId,
         priority
       )
-      await refreshCurrentToDo?.()
-      await refreshToDos?.()
+      setWorkspaceState(workspace)
     } catch (err) {
       setError(err.message)
     }
@@ -164,14 +177,13 @@ export function useToDoDetail(
   // ===== HANDLE UPDATE TASK DUE ========================================
   async function handleUpdateTaskDue(taskId, newDue) {
     try {
-      await updateTaskDue(
+      const workspace = await updateTaskDue(
         currentUser.username,
         currentToDo.id,
         taskId,
         newDue
       )
-      await refreshCurrentToDo?.()
-      await refreshToDos?.()
+      setWorkspaceState(workspace)
     } catch (err) {
       setError(err.message)
     }

@@ -6,7 +6,22 @@ export function getAllTasks(toDoDetails = []) {
 }
 
 
-export function getOverviewStats(toDoSummaries = [], toDoDetails = []) {
+export function getOverviewStats(
+  workspaceStats = null,
+  toDoSummaries = [],
+  toDoDetails = []
+) {
+  if (workspaceStats) {
+    return {
+      totalToDos: workspaceStats.todo_count,
+      totalTasks: workspaceStats.total_task_count,
+      openTasks: workspaceStats.total_open_task_count,
+      doneTasks: workspaceStats.total_done_task_count,
+      overdueTasks: workspaceStats.total_overdue_task_count,
+      overallCompletionRate: workspaceStats.overall_completion_rate,
+    }
+  }
+
   const allTasks = getAllTasks(toDoDetails)
   const openTasks = allTasks.filter((task) => task.status === 'open').length
   const doneTasks = allTasks.filter((task) => task.status === 'done').length
@@ -41,14 +56,7 @@ export function getUpcomingTasks(toDoDetails = [], limit = 3) {
 
 
 export function getRecentlyUpdatedToDos(toDoSummaries = [], limit = 3) {
-  console.log('metrics/getRecentlyUpdatedToDos', {
-    value: toDoSummaries,
-    isArray: Array.isArray(toDoSummaries),
-    type: typeof toDoSummaries,
-  })
-
   const safeToDoSummaries = Array.isArray(toDoSummaries) ? toDoSummaries : []
-
   return [...safeToDoSummaries]
     .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
     .slice(0, limit)

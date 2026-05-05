@@ -1,27 +1,18 @@
 # mytodo/core/services/base.py
 
-from datetime import datetime, timezone
-
-from mytodo.domain.todo_list import ToDoList
-from mytodo.core.protocols import ToDoRepository
-from mytodo.core.services.errors import InvalidInputError
-from mytodo.core.services.messages import ToDoMessage
+from mytodo.core.errors import InvalidInputError, NotFoundError
+from mytodo.core.messages import ToDoMessage
+from mytodo.infra.repositories import ToDoRepository
 
 
-class BaseToDoService:
-    def __init__(self, repo: ToDoRepository):
-        self.repo = repo
+class BaseService:
+    def __init__(self, todo_repo: ToDoRepository | None = None):
+        self.todo_repo = todo_repo
 
-    def _parse_task_id(self, task_id: str) -> str:
-        if not task_id.strip():
-            raise InvalidInputError(ToDoMessage.invalid_task_id(task_id))
-        return task_id
-
-    def _persist_created_todo(self, todo: ToDoList) -> None:
-        self.repo.save_todo(todo)
-        self.repo.register_todo_summary(todo)
-
-    def _touch_and_save_todo(self, todo: ToDoList) -> None:
-        todo.updated_at = datetime.now(timezone.utc)
-        self.repo.save_todo(todo)
-        self.repo.update_todo_summary(todo)
+    def require_todo_id(self, user_id: str, todo_id: str) -> str:
+        if self.todo_repo is None:
+            raise RuntimeError("todo_repo is required for todo checks")
+        valid_todo_id = self.todo_repo.get_todo_id(user_id, todo_id)
+        if valid_todo_id is None:
+            raise NotFoundError(ToDoMessage.todo_not_found())
+        return valid_todo_id

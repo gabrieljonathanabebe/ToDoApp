@@ -17,10 +17,15 @@ import PageHeader from '../components/common/PageHeader'
 
 function HomePage({
   currentUser,
+  workspaceStats,
   toDoSummaries = [],
   toDoDetails = [],
 }) {
-  const overview = getOverviewStats(toDoSummaries, toDoDetails)
+  const overview = getOverviewStats(
+    workspaceStats,
+    toDoSummaries,
+    toDoDetails
+  )
   const upcomingTasks = getUpcomingTasks(toDoDetails, 3)
   const recentTodos = getRecentlyUpdatedToDos(toDoSummaries, 3)
 

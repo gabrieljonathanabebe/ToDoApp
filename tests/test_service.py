@@ -1,204 +1,164 @@
-# tests/test_service.py
+from datetime import date
+
+from sqlalchemy.orm import Session
 
 from mytodo.core.results import Code
-from mytodo.domain.todo_list import ToDoList
-from mytodo.core.services import ToDoService, TaskService
-from tests.fakes import FakeRepo
+from mytodo.core.services import TaskService, ToDoService
+from mytodo.domain import Status
+from mytodo.infra.repositories import TaskRepository, ToDoRepository
+from tests.db_seed import DbSeed
 
 
-# ===== TODO SERVICE =====================================================
-def test_get_todos_returns_ok_and_data(
-    todo_service: ToDoService, repo: FakeRepo
+def make_todo_service(db: Session) -> ToDoService:
+    return ToDoService(todo_repo=ToDoRepository(db))
+
+
+def make_task_service(db: Session) -> TaskService:
+    return TaskService(
+        task_repo=TaskRepository(db),
+        todo_repo=ToDoRepository(db),
+    )
+
+
+def test_get_todo_summaries_returns_ok_and_data(
+    db: Session,
+    seed: DbSeed,
 ) -> None:
-    todo = ToDoList.create_new("Existing To-Do")
-    repo.save_todo(todo)
-    repo.register_todo_summary(todo)
+    user = seed.user()
+    todo = seed.todo(user=user)
+    seed.task(todo)
 
-    res = todo_service.get_todos()
+    res = make_todo_service(db).get_todo_summaries(user.id)
 
     assert res.code == Code.OK
     assert res.data is not None
     assert len(res.data) == 1
+    assert res.data[0].task_count == 1
 
 
-def test_create_todo_success_returns_created_and_data(
-    todo_service: ToDoService,
+def test_create_todo_success_returns_workspace(
+    db: Session,
+    seed: DbSeed,
 ) -> None:
-    res = todo_service.create_todo("New To-Do")
+    user = seed.user()
+
+    res = make_todo_service(db).create_todo(user.id, "New To-Do")
 
     assert res.code == Code.CREATED
     assert res.data is not None
+    assert [todo.title for todo in res.data.todos] == ["New To-Do"]
 
 
 def test_create_todo_duplicate_returns_already_exists(
-    todo_service: ToDoService, repo: FakeRepo
+    db: Session,
+    seed: DbSeed,
 ) -> None:
-    todo = ToDoList.create_new("New To-Do")
-    repo.save_todo(todo)
-    repo.register_todo_summary(todo)
+    user = seed.user()
+    seed.todo(user=user, title="New To-Do")
 
-    res = todo_service.create_todo("New To-Do")
+    res = make_todo_service(db).create_todo(user.id, "New To-Do")
 
     assert res.code == Code.ALREADY_EXISTS
     assert res.data is None
 
 
-def test_open_todo_success_returns_ok_and_data(
-    todo_service: ToDoService, repo: FakeRepo
+def test_delete_todo_success_returns_workspace(
+    db: Session,
+    seed: DbSeed,
 ) -> None:
-    todo = ToDoList.create_new("Existing To-Do")
-    repo.save_todo(todo)
-    repo.register_todo_summary(todo)
+    user = seed.user()
+    todo = seed.todo(user=user)
 
-    res = todo_service.open_todo(todo.id)
+    res = make_todo_service(db).delete_todo(user.id, todo.id)
 
     assert res.code == Code.OK
     assert res.data is not None
-    assert res.data.id == todo.id
+    assert res.data.todos == []
 
 
-def test_open_todo_missing_returns_not_found(todo_service: ToDoService) -> None:
-    res = todo_service.open_todo("missing-id")
+def test_delete_todo_missing_returns_not_found(
+    db: Session,
+    seed: DbSeed,
+) -> None:
+    user = seed.user()
+
+    res = make_todo_service(db).delete_todo(user.id, "missing-id")
 
     assert res.code == Code.NOT_FOUND
     assert res.data is None
 
 
-def test_delete_todo_success_returns_ok(
-    todo_service: ToDoService, repo: FakeRepo
+def test_create_task_success_returns_workspace(
+    db: Session,
+    seed: DbSeed,
 ) -> None:
-    todo = ToDoList.create_new("Delete Me")
-    repo.save_todo(todo)
-    repo.register_todo_summary(todo)
+    user = seed.user()
+    todo = seed.todo(user=user)
 
-    res = todo_service.delete_todo(todo.id)
-
-    assert res.code == Code.OK
-    assert res.data is None
-
-
-def test_delete_todo_missing_returns_not_found(todo_service: ToDoService) -> None:
-    res = todo_service.delete_todo("missing-id")
-
-    assert res.code == Code.NOT_FOUND
-    assert res.data is None
-
-
-# ===== TASK SERVICE =====================================================
-def test_create_task_success_returns_created_and_data(
-    task_service: TaskService,
-) -> None:
-    todo = ToDoList.create_new("Test")
-
-    res = task_service.create_task(
-        todo,
+    res = make_task_service(db).create_task(
+        user_id=user.id,
+        todo_id=todo.id,
         description="Test Desc",
-        priority="2",
-        due="2026-07-01",
+        priority=2,
+        due=date(2026, 7, 1),
         notes="Important",
     )
 
     assert res.code == Code.CREATED
     assert res.data is not None
-    assert res.data.description == "Test Desc"
+    assert res.data.todos[0].tasks[0].description == "Test Desc"
+    assert res.data.todos[0].task_count == 1
 
 
-def test_delete_task_success_returns_ok(
-    task_service: TaskService, todo_with_five_tasks: ToDoList
+def test_update_task_status_success_returns_workspace(
+    db: Session,
+    seed: DbSeed,
 ) -> None:
-    task_id = todo_with_five_tasks.tasks[0].id
+    user = seed.user()
+    todo = seed.todo(user=user)
+    task = seed.task(todo)
 
-    res = task_service.delete_task(todo_with_five_tasks, task_id)
-
-    assert res.code == Code.OK
-    assert res.data is None
-
-
-def test_delete_task_missing_returns_not_found(
-    task_service: TaskService, todo_with_five_tasks: ToDoList
-) -> None:
-    res = task_service.delete_task(todo_with_five_tasks, "missing-id")
-
-    assert res.code == Code.NOT_FOUND
-    assert res.data is None
-
-
-def test_toggle_status_success_returns_ok(
-    task_service: TaskService, todo_with_five_tasks: ToDoList
-) -> None:
-    task_id = todo_with_five_tasks.tasks[0].id
-
-    res = task_service.toggle_status(todo_with_five_tasks, task_id)
-
-    assert res.code == Code.OK
-    assert res.data is None
-
-
-def test_toggle_status_missing_returns_not_found(
-    task_service: TaskService, todo_with_five_tasks: ToDoList
-) -> None:
-    res = task_service.toggle_status(todo_with_five_tasks, "missing-id")
-
-    assert res.code == Code.NOT_FOUND
-    assert res.data is None
-
-
-def test_sort_tasks_success_returns_ok(
-    task_service: TaskService, todo_with_five_tasks: ToDoList
-) -> None:
-    res = task_service.sort_tasks(todo_with_five_tasks, key="due", reverse=False)
-
-    assert res.code == Code.OK
-    assert res.data is None
-
-
-def test_sort_tasks_invalid_key_returns_invalid_input(
-    task_service: TaskService, todo_with_five_tasks: ToDoList
-) -> None:
-    res = task_service.sort_tasks(todo_with_five_tasks, key="invalid", reverse=False)
-
-    assert res.code == Code.INVALID_INPUT
-    assert res.data is None
-
-
-def test_update_task_description_success_returns_ok(
-    task_service: TaskService, todo_with_five_tasks: ToDoList
-) -> None:
-    task_id = todo_with_five_tasks.tasks[0].id
-
-    res = task_service.update_task_description(
-        todo_with_five_tasks,
-        task_id,
-        "Updated description",
+    res = make_task_service(db).update_task_status(
+        user_id=user.id,
+        todo_id=todo.id,
+        task_id=task.id,
+        status=Status.done.value,
     )
 
     assert res.code == Code.OK
-    assert res.data is None
+    assert res.data is not None
+    assert res.data.todos[0].tasks[0].status == Status.done
+    assert res.data.todos[0].done_task_count == 1
 
 
-def test_update_task_description_missing_returns_not_found(
-    task_service: TaskService, todo_with_five_tasks: ToDoList
+def test_delete_task_success_returns_workspace(
+    db: Session,
+    seed: DbSeed,
 ) -> None:
-    res = task_service.update_task_description(
-        todo_with_five_tasks,
-        "missing-id",
-        "Updated description",
+    user = seed.user()
+    todo = seed.todo(user=user)
+    task = seed.task(todo)
+
+    res = make_task_service(db).delete_task(user.id, todo.id, task.id)
+
+    assert res.code == Code.OK
+    assert res.data is not None
+    assert res.data.todos[0].tasks == []
+
+
+def test_update_task_missing_returns_not_found(
+    db: Session,
+    seed: DbSeed,
+) -> None:
+    user = seed.user()
+    todo = seed.todo(user=user)
+
+    res = make_task_service(db).update_task_description(
+        user_id=user.id,
+        todo_id=todo.id,
+        task_id="missing-id",
+        description="Updated",
     )
 
     assert res.code == Code.NOT_FOUND
-    assert res.data is None
-
-
-def test_update_task_status_invalid_status_returns_invalid_input(
-    task_service: TaskService, todo_with_five_tasks: ToDoList
-) -> None:
-    task_id = todo_with_five_tasks.tasks[0].id
-
-    res = task_service.update_task_status(
-        todo_with_five_tasks,
-        task_id,
-        "invalid-status",
-    )
-
-    assert res.code == Code.INVALID_INPUT
     assert res.data is None

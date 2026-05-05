@@ -32,10 +32,10 @@ export async function updateTaskStatus(username, todoId, taskId, status) {
 }
 
 
-export async function sortTasks(username, todoId, key, reverse = false) {
+export async function updateTaskOrder(username, todoId, items) {
 	return patchJson(
-		apiRoutes.todos.sort(username, todoId),
-		{ key, reverse }
+		apiRoutes.todos.tasks.order(username, todoId),
+		{ items }
 	)
 }
 

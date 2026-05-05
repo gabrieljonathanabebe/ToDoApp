@@ -12,10 +12,10 @@ export const apiRoutes = {
     create: (username) => `/users/${username}/todos`,
     delete: (username, todoId) => `/users/${username}/todos/${todoId}`,
 
-    sort: (username, todoId) => `/users/${username}/todos/${todoId}/sort`,
-
     tasks: {
       create: (username, todoId) => `/users/${username}/todos/${todoId}/tasks`,
+      order: (username, todoId) =>
+        `/users/${username}/todos/${todoId}/tasks/order`,
       delete: (username, todoId, taskId) =>
         `/users/${username}/todos/${todoId}/tasks/${taskId}`,
       updateStatus: (username, todoId, taskId) =>

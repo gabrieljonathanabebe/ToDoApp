@@ -1,39 +1,56 @@
 # mytodo/core/services/todo.py
 
-from mytodo.core.services.base import BaseToDoService
-from mytodo.domain.todo_list import ToDoList
-from mytodo.domain.models import ToDoSummary
-from mytodo.core.results import Result, Code
-from mytodo.core.services.errors import NotFoundError, AlreadyExistsError
-from mytodo.core.services.messages import ToDoMessage
-from mytodo.core.services.responses import ok, resultify, created
+from mytodo.core.services import BaseService
+from mytodo.core.errors import AlreadyExistsError, NotFoundError
+from mytodo.core.messages import ToDoMessage
+from mytodo.core.responses import Success, created, ok, resultify
+from mytodo.domain import ToDoDetail, ToDoSummary, ToDoWorkspace
+from mytodo.infra.repositories import ToDoRepository
 
 
-class ToDoService(BaseToDoService):
-    def get_todos(self) -> Result[list[ToDoSummary]]:
-        return Result(Code.OK, data=self.repo.get_todos())
-
-    @resultify
-    def open_todo(self, todo_id: str) -> Result[ToDoList]:
-        todo = self.repo.load_todo(todo_id)
-        if todo is None:
-            raise NotFoundError(ToDoMessage.todo_not_found())
-        return ok(data=todo)
+class ToDoService(BaseService):
+    def __init__(
+        self,
+        todo_repo: ToDoRepository,
+    ):
+        super().__init__(todo_repo=todo_repo)
+        self.todo_repo = todo_repo
 
     @resultify
-    def create_todo(self, title: str) -> Result[ToDoList]:
-        existing_summary = self.repo.get_todo_summary_by_title(title)
-        if existing_summary is not None:
+    def get_workspace(self, user_id: str) -> Success[ToDoWorkspace]:
+        workspace = self.todo_repo.get_workspace(user_id)
+        return ok(data=workspace)
+
+    @resultify
+    def get_todo_summaries(self, user_id: str) -> Success[list[ToDoSummary]]:
+        workspace = self.todo_repo.get_workspace(user_id)
+        return ok(data=workspace.todo_summaries)
+
+    @resultify
+    def create_todo(self, user_id: str, title: str) -> Success[ToDoWorkspace]:
+        existing_todos = self.todo_repo.get_workspace(user_id).todo_summaries
+        if any(todo.title == title for todo in existing_todos):
             raise AlreadyExistsError(ToDoMessage.todo_already_exists(title))
-        create_todo = ToDoList.create_new(title)
-        self._persist_created_todo(create_todo)
-        return created(ToDoMessage.todo_created(create_todo.title), data=create_todo)
+        self.todo_repo.create_todo(user_id, title)
+        workspace = self.todo_repo.get_workspace(user_id)
+        return created(ToDoMessage.todo_created(title), data=workspace)
 
     @resultify
-    def delete_todo(self, todo_id: str) -> Result[None]:
-        summary = self.repo.get_todo_summary_by_id(todo_id)
-        if summary is None:
+    def delete_todo(self, user_id: str, todo_id: str) -> Success[ToDoWorkspace]:
+        valid_todo_id = self.require_todo_id(user_id, todo_id)
+        is_deleted = self.todo_repo.delete_todo(user_id, valid_todo_id)
+        if not is_deleted:
             raise NotFoundError(ToDoMessage.todo_not_found())
-        if not self.repo.delete_todo(todo_id):
+        workspace = self.todo_repo.get_workspace(user_id)
+        return ok(ToDoMessage.todo_deleted(), data=workspace)
+
+    @resultify
+    def get_todo_detail(
+        self,
+        user_id: str,
+        todo_id: str,
+    ) -> Success[ToDoDetail]:
+        detail = self.todo_repo.get_todo_detail(user_id, todo_id)
+        if detail is None:
             raise NotFoundError(ToDoMessage.todo_not_found())
-        return ok(ToDoMessage.todo_deleted(summary.title))
+        return ok(data=detail)
