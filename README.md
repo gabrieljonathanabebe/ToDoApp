@@ -11,57 +11,80 @@ It combines a FastAPI backend with a React frontend and focuses on clean archite
 - List and grid views for task details
 - Dashboard with key productivity metrics
 - Session and navigation persistence
-- Local file-based persistence
+- PostgreSQL-backed persistence
+- Docker-based local runtime
+- Alembic database migrations
 
 ## Tech Stack
 
-- **Backend:** FastAPI, Pydantic
+- **Backend:** FastAPI, Pydantic, SQLAlchemy
 - **Frontend:** React, Vite
-- **Data handling:** pandas
-- **Tooling:** pytest, pre-commit, black
+- **Database:** PostgreSQL
+- **Migrations:** Alembic
+- **Tooling:** pytest, pre-commit, black, Docker Compose
 
 ## Project Structure
 
 ```bash
 mytodo/
   clients/
-    api/
-    web/
-    cli/
-  core/
-  domain/
+    api/        # FastAPI routes, schemas, dependencies
+    web/        # React/Vite frontend
+  core/         # services, application results, errors, messages
+  domain/       # Pydantic domain models and computes domain properties
   infra/
+    adapters/   # mapping between ORM/domain/API response models
+    db/         # SQLAlchemy base, session and ORM models
+    repositories/
+migrations/     # Alembic migration environment and versions
 docs/
 tests/
 ```
 
-- **domain** contains the core business objects and rules
-- **core** contains services, protocols, and application logic
-- **infra** contains repository and adapter implementations
-- **clients** contains the API, frontend, and CLI layers
+- **domain** contains the core business models and computed properties
+- **core** contains service-layer use cases, result types, errors and messages
+- **infra** contains database models, repositories and adapters
+- **clients/api** exposes the FastAPI HTTP API
+- **clients/web** contains the react frontend
+- **migrations** contains Alembic migration setup and schema versions
 
 ## Getting started
 
-**1. Create and active a virtual environment**
+### 1. Create and active a virtual environment
 
 ```bash
 /opt/homebrew/bin/python3.13 -m venv .venv
 source .venv/bin/activate
 ```
 
-**2. Install dependencies**
+### 2. Install dependencies
 
 ```bash
 python -m pip install -r requirements-dev.txt
 ```
 
-**3. Start the backend**
+### 3. Start PostgreSQL with Docker Compose
+```bash
+docker compose up -d db
+```
+For local development outside Docker, `.env` should point to the exposed local database port, for example:
+```env
+DATABASE_URL=postgresql+psycopg://mytodo:mytodo@localhost:5433/mytodo
+FRONTEND_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
+
+### 4. Run database migrations
+```bash
+alembic upgrade head
+```
+
+### 5. Start the backend locally
 
 ```bash
 python -m uvicorn mytodo.clients.api.app:app --reload
 ```
 
-**4. Start the frontend**
+### 6. Start the frontend locally
 
 ```bash
 cd mytodo/clients/web
@@ -69,7 +92,34 @@ npm install
 npm run dev
 ```
 
-## Testing
+## Docker Runtime
+
+The project includes a Docker Compose setup for local integration testing with:
+- PostgreSQL
+- FastAPI backend
+- Vite frontend
+
+Start the full stack with:
+
+```bash
+docker compose up --build
+```
+Run migration inside the backend container with:
+```bash
+docker compose exec backend alembic upgrade head
+```
+
+The local frontend is available at:
+```txt
+http://localhost:5173
+```
+
+The backend API docs are available at:
+```txt
+http://localhost:8000/docs
+```
+
+## Testing and Checks
 
 Run backend tests with:
 
@@ -77,7 +127,13 @@ Run backend tests with:
 pytest -v
 ```
 
-Run formatting and pre-commit checks with:
+Run frontend linting and production build checks with:
+```bash
+npm --prefix mytodo/clients/web run lint
+npm --prefix mytodo/clients/web run build
+```
+
+Run pre-commit checks with:
 
 ```bash
 pre-commit run --all-files
@@ -85,19 +141,25 @@ pre-commit run --all-files
 
 ## Current Status
 
-This project is currently being prepared for the **v0.1.0** release.
-The focus of this release is a stable local development setup, a working frontend and backend flow, and a clean project foundation for future improvements.
+The focus of this release is the migration from local file-based persistence to a PostgreSQL-backed architecture with SQLAlchemy repositories, Alembic migrations, Docker-based local runtime, and a workspace-oriented API response flow for frontend state updates.
+
 
 ## Roadmap
 
 Planned next steps include:
 
-- Docker setup for frontend and backend
-- Improved documentation
-- Further UI/UX refinements
-- Future persistence and deployment improvements
+- Test deployment with public frontend and backend URLs
+- Managed or containerized PostgreSQL deployment
+- CI workflow updates for backend tests and frontend checks
+- More complete responsive layout pass
+- Improved release documentation
+- Future UI/UX refinements
+
 
 ## Screenshots
+
+The screenshots below were captured for `v0.1.0`. They remain visually representative for `v0.2.0`, which primarily changes persistence, backend architecture, and frontend data flow rather than the UI design.
+
 
 ### To-Do-Detail List View
 
