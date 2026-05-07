@@ -23,20 +23,27 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql+psycopg://mytodo:mytodo@db:5432/mytodo
-      FRONTEND_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173
+      FRONTEND_ORIGINS: https://mytodo.jonathanabebe.dev
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
       args:
-        VITE_API_BASE_URL: http://localhost:8000
+        VITE_API_BASE_URL: https://api.mytodo.jonathanabebe.dev
     image: mytodo-frontend:v0.2.0
     container_name: mytodo-frontend-container
     depends_on:
       - backend
     ports:
-      - "5173:5173"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
 
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

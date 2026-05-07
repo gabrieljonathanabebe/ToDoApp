@@ -1,0 +1,9 @@
+mytodo.jonathanabebe.dev {
+	root * /srv/frontend
+	try_files {path} /index.html
+	file_server
+}
+
+api.mytodo.jonathanabebe.dev {
+	reverse_proxy backend:8000
+}
