@@ -139,21 +139,24 @@ Run pre-commit checks with:
 pre-commit run --all-files
 ```
 
-## Current Status
+## Current Deployment
 
-The focus of this release is the migration from local file-based persistence to a PostgreSQL-backed architecture with SQLAlchemy repositories, Alembic migrations, Docker-based local runtime, and a workspace-oriented API response flow for frontend state updates.
+MyToDo v0.2.0 is currently deployed as a test release at:
+
+- Frontend: https://mytodo.jonathanabebe.dev
+- API docs: https://api.mytodo.jonathanabebe.dev/docs
+
+The deployment runs on AWS EC2 with Docker Compose, PostgresQL, Alembic migrations and Caddy for HTTPS/reverse proxy.
 
 
 ## Roadmap
 
 Planned next steps include:
 
-- Test deployment with public frontend and backend URLs
-- Managed or containerized PostgreSQL deployment
-- CI workflow updates for backend tests and frontend checks
-- More complete responsive layout pass
-- Improved release documentation
-- Future UI/UX refinements
+- Replace prototype authentication with a safer user management flow
+- Improve responsive layout for mobile and tablet
+- Add CD automation
+- Add backups or managed database option
 
 
 ## Screenshots
