@@ -6,8 +6,6 @@ services:
       POSTGRES_DB: mytodo
       POSTGRES_USER: mytodo
       POSTGRES_PASSWORD: mytodo
-    ports:
-      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -19,8 +17,6 @@ services:
     container_name: mytodo-backend-container
     depends_on:
       - db
-    ports:
-      - "8000:8000"
     environment:
       DATABASE_URL: postgresql+psycopg://mytodo:mytodo@db:5432/mytodo
       FRONTEND_ORIGINS: https://mytodo.jonathanabebe.dev
