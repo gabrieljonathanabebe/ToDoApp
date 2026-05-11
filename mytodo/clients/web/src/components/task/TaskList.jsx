@@ -2,6 +2,7 @@
 
 import Panel from "../common/Panel";
 import TaskCard from "./TaskCard";
+import Surface from "../common/Surface";
 
 
 function TaskList({
@@ -13,7 +14,7 @@ function TaskList({
   onUpdateTaskDue
 }) {
   return (
-    <Panel className="task-list-panel">
+    <Surface variant="panel" className="task-list">
       <div className="task-list-header">
         <div className="task-list-header-left">Description</div>
         <div className="task-list-header-right">
@@ -38,7 +39,7 @@ function TaskList({
           />
         </div>
       ))}
-    </Panel>
+    </Surface>
   )
 }
 

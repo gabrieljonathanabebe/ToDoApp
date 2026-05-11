@@ -1,6 +1,6 @@
 // mytodo/clients/web/src/components/task/TaskGrid.jsx
 
-import TaskWidgetCard from "./TaskWidgetCard";
+import TaskGridCard from "./TaskGridCard";
 
 
 function TaskGrid({
@@ -14,7 +14,7 @@ function TaskGrid({
   return (
     <div className="task-grid">
       {tasks.map((task) => (
-        <TaskWidgetCard
+        <TaskGridCard
           key={task.id}
           task={task}
           onDeleteTask={onDeleteTask}

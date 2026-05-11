@@ -1,17 +1,13 @@
 /* mytodo/clients/web/src/styles/primitives/surfaces.css */
 
-.surface-card {
-  background: linear-gradient(180deg,
-      var(--surface-top-soft) 0%,
-      var(--surface-bottom-soft) 100%);
+
+.surface {
+  background: rgba(255, 255, 255, 0.5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  box-shadow:
-    inset 1px 1px 0 var(--edge-highlight-strong),
-    inset -1px -1px 0 var(--edge-shadow),
-    var(--elevation-2);
-  backdrop-filter: var(--blur-lg);
-  -webkit-backdrop-filter: var(--blur-lg);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
   transition:
     transform var(--transition-fast),
     box-shadow var(--transition-fast),
@@ -19,27 +15,35 @@
     border-color var(--transition-fast);
 }
 
-.surface-card-hover:hover {
+.surface-interactive:hover {
   border-color: var(--color-border-strong);
-  box-shadow:
-    inset 1px 1px 0 var(--edge-highlight-strong),
-    inset -1px -1px 0 var(--edge-shadow),
-    var(--elevation-3);
+  box-shadow: var(--shadow-md);
 }
 
-
-.surface-soft {
-  background: linear-gradient(180deg,
-      var(--surface-top-soft) 0%,
-      var(--surface-bottom-soft) 100%);
+.surface-bar {
+  padding: 0;
 }
 
-.surface-strong {
-  background: linear-gradient(180deg,
-      var(--surface-top-strong) 0%,
-      var(--surface-bottom-strong) 100%);
-  border-color: var(--color-border-strong);
+.surface-panel {
+  padding: var(--space-5);
 }
+
+.surface-card {
+  padding: var(--space-4) var(--space-5);
+}
+
+.surface-widget {
+  padding: var(--space-4);
+}
+
+.surface-compact {
+  padding: var(--space-3);
+}
+
+.surface-modal {
+  padding: var(--space-4);
+}
+
 
 .surface-control {
   background: var(--color-surface-strong);
@@ -54,13 +58,11 @@
 }
 
 .surface-dropdown {
-  background: rgba(255, 255, 255, 0.56);
-  border: 1px solid var(--color-border-strong);
+  padding: var(--space-2);
   border-radius: var(--radius-lg);
-  box-shadow:
-    inset 1px 1px 0 var(--edge-highlight-strong),
-    inset -1px -1px 0 var(--edge-shadow),
-    var(--elevation-3);
-  backdrop-filter: blur(44px);
-  -webkit-backdrop-filter: blur(44px);
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--elevation-3);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
 }

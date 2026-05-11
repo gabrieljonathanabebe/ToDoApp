@@ -124,6 +124,7 @@
   --blur-lg: blur(36px);
 
   /* Spacing */
+  --space-half: 2px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;

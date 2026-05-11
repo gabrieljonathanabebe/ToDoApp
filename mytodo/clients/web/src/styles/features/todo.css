@@ -8,31 +8,20 @@
   animation: riseInSoft 280ms ease both;
 }
 
-.todo-card {
-  padding: var(--space-4) var(--space-5);
-}
-
 .todo-card-button {
   all: unset;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--space-4);
   width: 100%;
   cursor: pointer;
   border-radius: calc(var(--radius-xl) - 4px);
-  padding: 2px;
-  transition:
-    opacity var(--transition-fast),
-    transform var(--transition-fast);
-}
-
-.todo-card-button:hover {
-  transform: translateY(-0.5px);
 }
 
 .todo-card-button:focus-visible {
   outline: 2px solid var(--color-blue-border);
-  outline-offset: 2px;
+  outline-offset: 4px;
 }
 
 .todo-card-left {
@@ -60,4 +49,45 @@
 .todo-card-meta {
   flex-wrap: wrap;
   font-size: var(--font-size-xs);
+}
+
+
+@media (max-width: 760px) {
+  .form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-row .btn {
+    width: 100%;
+  }
+
+  .todo-card-button {
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .todo-card-left {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .todo-card-right {
+    min-width: auto;
+    flex-shrink: 0;
+  }
+
+  .todo-card-meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .todo-card-meta .meta-separator {
+    display: none;
+  }
+
+  .todo-card-title {
+    font-size: var(--font-size-lg);
+  }
 }

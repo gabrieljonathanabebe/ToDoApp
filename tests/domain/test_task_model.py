@@ -68,7 +68,6 @@ def test_task_deadline_delta_days_returns_completed_date_minus_due_date() -> Non
         updated_at=completed_at,
         completed_at=completed_at,
     )
-
     assert task.deadline_delta_days == 2
 
 

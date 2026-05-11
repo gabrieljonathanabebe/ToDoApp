@@ -1,6 +1,7 @@
 // mytodo/clients/web/src/components/common/ErrorState.jsx
 
 import { AlertCircle } from "lucide-react";
+import Surface from "./Surface"
 
 
 function ErrorState({
@@ -8,7 +9,7 @@ function ErrorState({
   message = 'An unexpected error occurred. Please try again.'
 }) {
   return (
-    <div className="state-card surface-card">
+    <Surface variant="panel" className="state-card">
       <div className="state-icon-wrap">
         <AlertCircle
           className="state-icon state-icon-danger"
@@ -18,7 +19,7 @@ function ErrorState({
       </div>
       <h2 className="state-title">{title}</h2>
       <p className="state-description">{message}</p>
-    </div>
+    </Surface>
   )
 }
 

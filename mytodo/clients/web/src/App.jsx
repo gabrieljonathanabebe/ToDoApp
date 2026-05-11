@@ -81,6 +81,7 @@ function App() {
 					workspaceStats={workspaceStats}
 					toDoSummaries={toDoSummaries}
 					toDoDetails={toDoDetails}
+					onOpenToDo={openToDo}
 				/>
 			)
 		}

@@ -17,7 +17,7 @@ export function formatRelativeDatetime(value) {
   if (hours < 24) return `${hours} h ago`
   if (days < 2) return 'yesterday'
 
-  return dt.toLocaleDateString(undefined, {
+  return dt.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -50,8 +50,8 @@ export function formatDaysLeft(value) {
 export function formatDueDate(dateStr) {
   if (!dateStr) return 'No due date'
   const date = new Date(dateStr)
-  return date.toLocaleDateString(undefined, {
-    month: 'short',
+  return date.toLocaleDateString('en-US', {
+    month: 'long',
     day: 'numeric',
     year: 'numeric'
   })

@@ -23,34 +23,40 @@
   border-color: var(--color-purple-border);
 }
 
-.badge-blue {
+.badge--primary {
   background: var(--color-blue-soft);
   color: var(--color-blue-strong);
   border-color: var(--color-blue-border);
 }
 
-.badge-green {
+.badge--success {
   background: var(--color-green-soft);
   color: var(--color-green-strong);
   border-color: var(--color-green-border);
 }
 
-.badge-red {
+.badge--danger {
   background: var(--color-red-soft);
   color: var(--color-red-strong);
   border-color: var(--color-red-border);
 }
 
-.badge-yellow {
+.badge--warning {
   background: var(--color-amber-soft);
   color: var(--color-amber-strong);
   border-color: var(--color-amber-border);
 }
 
-.badge-gray {
+.badge--gray {
   background: var(--color-gray-soft);
   color: var(--color-gray-strong);
   border-color: var(--color-gray-border);
+}
+
+.badge--purple {
+  background: var(--color-purple-soft);
+  color: var(--color-purple-strong);
+  border-color: var(--color-purple-border);
 }
 
 .badge-button {

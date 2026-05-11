@@ -1,7 +1,8 @@
-/* mytodo/clients/web/src/styles/components/buttons.css */
+/* mytodo/clients/web/src/styles/components/forms.css */
 
 .form-panel {
   margin-bottom: var(--space-4);
+
   padding: var(--space-2);
 }
 
@@ -41,6 +42,7 @@
 }
 
 .form-input {
+  min-height: 35px;
   flex: 1;
 }
 
@@ -87,4 +89,15 @@
   margin: var(--space-3) 0 0 var(--space-1);
   font-size: var(--font-size-sm);
   color: var(--color-danger);
+}
+
+.form-hint {
+  margin: calc(var(--space-4) * -1) 0 var(--space-5) 0;
+  padding: var(--space-3);
+  border: 1px solid rgba(120, 91, 255, 0.22);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.42);
+  color: var(--color-text-soft);
+  font-size: var(--font-size-sm);
+  line-height: 1.45;
 }

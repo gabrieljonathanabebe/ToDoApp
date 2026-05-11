@@ -1,0 +1,64 @@
+/* mytodo/clients/web/src/styles/components/breakdown.css */
+
+.breakdown-widget__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.breakdown-widget__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.breakdown-widget__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.breakdown-widget__count {
+  color: var(--color-text-soft);
+  font-weight: 500;
+}
+
+.breakdown-widget__percent {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-soft);
+  text-align: right;
+}
+
+.breakdown-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.breakdown-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-blue-strong);
+}
+
+.breakdown-bar__fill--success {
+  background: var(--color-success);
+}
+
+.breakdown-bar__fill--open {
+  background: var(--color-purple);
+}
+
+.breakdown-bar__fill--medium {
+  background: var(--color-warning);
+}
+
+.breakdown-bar__fill--danger {
+  background: var(--color-danger);
+}
+
+.breakdown-bar__fill--low {
+  background: var(--color-gray);
+}

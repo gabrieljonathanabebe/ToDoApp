@@ -11,24 +11,25 @@ function TaskMeta({
   className = '',
   showSeparator = true,
 }) {
+  function getDaysLeftTone(daysLeft) {
+    if (daysLeft == null) return ''
+    if (daysLeft < 0) return 'meta-item--danger'
+    if (daysLeft === 0) return 'meta-item--warning'
+    return ''
+  }
+
   return (
     <div className={className}>
-      {/* ===== CORE META ================================================= */}
-      {/* ----- DUE DATE ----- */}
       <span className='meta-item'>
         <DueDateEditor
           value={task.due}
           onChange={(newDue) => onUpdateTaskDue(task.id, newDue)}
         />
       </span>
-
-      {/* ----- SEPARATOR ----- */}
       {showSeparator && (
         <span className='meta-separator'>|</span>
       )}
-
-      {/* ----- DAYS LEFT ----- */}
-      <span className='meta-item'>
+      <span className={`meta-item ${getDaysLeftTone(task.days_left)}`}>
         <Timer className='meta-icon' size={14} strokeWidth={2} />
         {formatDaysLeft(task.days_left)}
       </span>

@@ -35,8 +35,6 @@ function ToDoDetailPage({
 		setDue,
 		notes,
 		setNotes,
-		showNotes,
-		setShowNotes,
 		createError,
 		handleCreateTask,
 		handleDeleteTask,
@@ -158,8 +156,6 @@ function ToDoDetailPage({
 						onDueChange={setDue}
 						notes={notes}
 						onNotesChange={setNotes}
-						showNotes={showNotes}
-						onToggleNotes={() => setShowNotes((prev) => !prev)}
 						onSubmit={handleCreateTask}
 						error={createError}
 					/>

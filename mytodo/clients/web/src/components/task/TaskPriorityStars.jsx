@@ -1,7 +1,7 @@
 // mytodo/clients/web/src/components/task/TaskPriorityStars.jsx
 
 import { Star } from 'lucide-react'
-import { priorityConfig } from './config/priorityConfig'
+import { taskPriorityConfig } from '../../config/taskConfig'
 
 
 function TaskPriorityStars({
@@ -14,7 +14,7 @@ function TaskPriorityStars({
   const numericValue =
     typeof value === 'number'
       ? value
-      : priorityConfig[value]?.value ?? Number(value)
+      : taskPriorityConfig[value]?.value ?? Number(value)
 
   return (
     <div className={`task-priority-stars ${className}`}>

@@ -1,0 +1,45 @@
+/* mytodo/clients/web/src/styles/components/modal.css */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  animation: fadeInSoft 180ms ease both;
+}
+
+.surface-modal {
+  padding: var(--space-4);
+}
+
+.modal {
+  width: min(100%, 420px);
+  max-height: min(80vh, 700px);
+  overflow-y: auto;
+  animation: scaleInSoft 220ms ease both;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.modal-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.modal-content {
+  min-width: 0;
+}

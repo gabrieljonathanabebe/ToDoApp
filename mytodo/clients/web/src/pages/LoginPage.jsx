@@ -28,6 +28,10 @@ function LoginPage({ onLogin }) {
 
 				<AuthHeader mode={mode} />
 
+				<p className='form-hint'>
+					Demo project. Please do not use a real password.
+				</p>
+
 				<form className='auth-form' onSubmit={handleSubmit}>
 					<input
 						className='form-control form-input'

@@ -18,7 +18,6 @@ function AppShell({
   onLogout,
   children,
 }) {
-  console.log('AppShell toDoSummaries', toDoSummaries)
   return (
     <div className='app-shell'>
       <Header

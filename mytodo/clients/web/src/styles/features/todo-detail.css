@@ -15,3 +15,10 @@
   flex-direction: column;
   gap: 0;
 }
+
+@media (max-width: 760px) {
+  .detail-filter-row {
+    margin-bottom: var(--space-4);
+    overflow-x: auto;
+  }
+}

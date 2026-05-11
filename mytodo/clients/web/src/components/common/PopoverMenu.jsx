@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import useClickOutside from '../../hooks/useClickOutside'
+import Surface from "./Surface";
 
 
 function PopoverMenu({
@@ -22,16 +23,16 @@ function PopoverMenu({
     <div className={`popover-anchor ${anchorClassName}`.trim()} ref={menuRef}>
       {trigger}
       {show && (
-        <div
+        <Surface
+          variant='dropdown'
           className={`
             popover-menu
-            surface-dropdown
             ${placement === 'top' ? 'popover-menu--top' : ''}
             ${menuClassName}
-            `.trim()}
+          `.trim()}
         >
           {children}
-        </div>
+        </Surface>
       )}
     </div>
   )

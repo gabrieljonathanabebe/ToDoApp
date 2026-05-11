@@ -9,7 +9,7 @@
 }
 
 .auth-card {
-  width: 100%;
+  width: min(100%, 420px);
   max-width: 440px;
   padding: var(--space-6);
   border-radius: var(--radius-xl);
@@ -102,4 +102,25 @@
   outline: none;
   box-shadow: 0 0 0 4px var(--color-primary-soft);
   border-radius: var(--radius-xl);
+}
+
+
+@media (max-width: 480px) {
+  .auth-shell {
+    align-items: center;
+    padding: var(--space-4);
+  }
+
+  .auth-card {
+    max-width: none;
+    padding: var(--space-5);
+  }
+
+  .auth-header {
+    margin-bottom: var(--space-5);
+  }
+
+  .auth-title {
+    font-size: 28px;
+  }
 }

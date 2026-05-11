@@ -6,6 +6,7 @@
   justify-content: space-between;
   gap: var(--space-6);
   margin-bottom: var(--space-5);
+  position: relative;
 }
 
 .page-toolbar-left {
@@ -57,4 +58,42 @@
   align-items: center;
   gap: var(--space-3);
   flex-shrink: 0;
+}
+
+
+@media (max-width: 760px) {
+  .page-toolbar-surface {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+
+  .page-toolbar-left {
+    min-width: 0;
+  }
+
+  .page-toolbar-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .page-toolbar-title-wrap {
+    min-width: 0;
+  }
+
+  .page-toolbar-title {
+    font-size: 24px;
+  }
+
+  .page-toolbar-view-controls {
+    width: fit-content;
+  }
+
+  .page-toolbar-actions {
+    position: static;
+    justify-self: end;
+  }
 }

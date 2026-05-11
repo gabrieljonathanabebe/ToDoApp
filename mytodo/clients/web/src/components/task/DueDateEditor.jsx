@@ -26,7 +26,7 @@ function DueDateEditor({ value, onChange }) {
   if (isEditing) {
     return (
       <input
-        className='due-date-input'
+        className='editable-input editable-input--meta due-date-input'
         type='date'
         value={editValue}
         autoFocus
@@ -48,7 +48,7 @@ function DueDateEditor({ value, onChange }) {
   return (
     <button
       type='button'
-      className='due-date-display'
+      className='editable-field editable-field--meta due-date-display'
       onClick={() => {
         setEditValue(value ?? '')
         setIsEditing(true)

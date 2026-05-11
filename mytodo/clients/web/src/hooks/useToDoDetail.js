@@ -24,7 +24,6 @@ export function useToDoDetail(
   const [priority, setPriority] = useState('2')
   const [due, setDue] = useState('')
   const [notes, setNotes] = useState('')
-  const [showNotes, setShowNotes] = useState(false)
   const [createError, setCreateError] = useState('')
 
 
@@ -49,7 +48,6 @@ export function useToDoDetail(
       setPriority('2')
       setDue('')
       setNotes('')
-      setShowNotes(false)
     } catch (err) {
       setCreateError(err.message)
     }
@@ -200,8 +198,6 @@ export function useToDoDetail(
     setDue,
     notes,
     setNotes,
-    showNotes,
-    setShowNotes,
     createError,
     handleCreateTask,
     handleDeleteTask,

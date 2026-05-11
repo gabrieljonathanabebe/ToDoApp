@@ -1,11 +1,12 @@
 // mytodo/clients/web/src/components/common/Panel.jsx
 
+import Surface from './Surface'
 
 function Panel({ children, className = '' }) {
   return (
-    <div className={`panel surface-card ${className}`.trim()}>
+    <Surface variant='panel' className={className}>
       {children}
-    </div>
+    </Surface>
   )
 }
 

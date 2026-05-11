@@ -1,8 +1,10 @@
 // mytodo/clients/web/src/components/todo/ToDoCard.jsx
 
-import Panel from '../common/Panel'
 import { formatRelativeDatetime } from '../../utils/formatters'
 import { CalendarDays, Clock3, Trash2 } from 'lucide-react'
+
+import Surface from '../common/Surface'
+import Badge from '../ui/Badge'
 
 
 function ToDoCard({ todo, onOpenToDo, onDeleteToDo }) {
@@ -12,11 +14,15 @@ function ToDoCard({ todo, onOpenToDo, onDeleteToDo }) {
 
   function handleDelete(e) {
     e.stopPropagation()
-    onDeleteToDo(todo.id)
+    onDeleteToDo?.(todo.id)
   }
 
   return (
-    <Panel className="todo-card surface-card surface-card-hover">
+    <Surface
+      as='article'
+      variant='card'
+      interactive
+    >
       <div className="todo-card-button" onClick={handleClick}>
         <div className="todo-card-left">
           <h3 className="todo-card-title">{todo.title}</h3>
@@ -33,19 +39,21 @@ function ToDoCard({ todo, onOpenToDo, onDeleteToDo }) {
           </div>
         </div>
         <div className="todo-card-right">
-          <span className="badge badge-purple">{todo.task_count} tasks</span>
-          <button
-            type='button'
-            className='icon-action icon-action-danger'
-            onClick={handleDelete}
-            aria-label={`Delete ${todo.title}`}
-            title='Delete To-Do'
-          >
-            <Trash2 size={16} strokeWidth={2} />
-          </button>
+          <Badge tone='purple'>{todo.task_count} tasks</Badge>
+          {onDeleteToDo && (
+            <button
+              type='button'
+              className='icon-action icon-action-danger'
+              onClick={handleDelete}
+              aria-label={`Delete ${todo.title}`}
+              title='Delete To-Do'
+            >
+              <Trash2 size={16} strokeWidth={2} />
+            </button>
+          )}
         </div>
       </div>
-    </Panel>
+    </Surface>
   )
 }
 

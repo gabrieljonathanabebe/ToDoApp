@@ -1,6 +1,5 @@
 // mytodo/clients/web/src/pages/DashboardPage.jsx
 
-import Widget from '../components/common/Widget'
 import PageHeader from '../components/common/PageHeader'
 import {
   getOverviewStats,
@@ -11,6 +10,8 @@ import {
 } from '../analytics/metrics'
 import { formatDuration } from '../utils/formatters'
 import { LayoutDashboard } from 'lucide-react'
+import KpiWidget from '../components/widgets/KpiWidget'
+import BreakdownWidget from '../components/widgets/BreakdownWidget'
 
 
 function DashboardPage({
@@ -40,6 +41,87 @@ function DashboardPage({
       ? Math.round((overview.doneTasks / overview.totalTasks) * 100)
       : 0
 
+  const overviewItems = [
+    {
+      label: 'Total tasks',
+      value: overview.totalTasks,
+    },
+    {
+      label: 'Completion rate',
+      value: `${completionRate}%`,
+    },
+    {
+      label: 'Average lead time',
+      value: averageLeadTime != null ? formatDuration(averageLeadTime) : '-',
+    },
+    {
+      label: 'Overdue tasks',
+      value: overview.overdueTasks,
+      tone: 'danger',
+    },
+  ]
+
+  function toPercent(value, total) {
+    return Math.round((value / total) * 100)
+  }
+
+  const statusItems = [
+    {
+      label: 'Open',
+      value: statusBreakdown.open,
+      percent: toPercent(statusBreakdown.open, totalStatusCount),
+      percentLabel: `${toPercent(statusBreakdown.open, totalStatusCount)}%`,
+      tone: 'open',
+    },
+    {
+      label: 'Done',
+      value: statusBreakdown.done,
+      percent: toPercent(statusBreakdown.done, totalStatusCount),
+      percentLabel: `${toPercent(statusBreakdown.done, totalStatusCount)}%`,
+      tone: 'success',
+    },
+  ]
+
+  const priorityItems = [
+    {
+      label: 'Low',
+      value: priorityBreakdown.low,
+      percent: toPercent(priorityBreakdown.low, totalPriorityCount),
+      percentLabel: `${toPercent(priorityBreakdown.low, totalPriorityCount)}%`,
+      tone: 'low',
+    },
+    {
+      label: 'Medium',
+      value: priorityBreakdown.medium,
+      percent: toPercent(priorityBreakdown.medium, totalPriorityCount),
+      percentLabel: `${toPercent(priorityBreakdown.medium, totalPriorityCount)}%`,
+      tone: 'medium',
+    },
+    {
+      label: 'High',
+      value: priorityBreakdown.high,
+      percent: toPercent(priorityBreakdown.high, totalPriorityCount),
+      percentLabel: `${toPercent(priorityBreakdown.high, totalPriorityCount)}%`,
+      tone: 'danger',
+    },
+  ]
+
+  const mostActiveItems = mostActiveToDos.map((toDo) => {
+    const percent =
+      toDo.totalTasks > 0
+        ? toPercent(toDo.openTasks, toDo.totalTasks)
+        : 0
+
+    return {
+      label: toDo.title,
+      value: `${toDo.openTasks}/${toDo.totalTasks}`,
+      percent,
+      percentLabel: `${percent}% open`,
+      tone: 'open',
+    }
+  })
+
+
   return (
     <div className='dashboard-page'>
       {/* ===== PAGE TITLE ================================================ */}
@@ -48,186 +130,34 @@ function DashboardPage({
       {/* ===== DASHBOARD GRID ============================================ */}
       <div className='dashboard-grid'>
         {/* ===== KPI OVERVIEW ============================================ */}
-        <Widget
+        <KpiWidget
           title='Overview'
           subtitle='Your key metrics at a glance'
           className='dashboard-widget dashboard-widget-overview'
-        >
-          {/* ----- TOTAL TASKS ----- */}
-          <div className='dashboard-kpi-grid'>
-            <div className='dashboard-kpi-card'>
-              <span className='dashboard-kpi-label'>Total tasks</span>
-              <strong className='dashboard-kpi-value'>
-                {overview.totalTasks}
-              </strong>
-            </div>
-            {/* ----- COMPLETION RATE ----- */}
-            <div className='dashboard-kpi-card'>
-              <span className='dashboard-kpi-label'>Completion rate</span>
-              <strong className='dashboard-kpi-value'>
-                {completionRate}%
-              </strong>
-            </div>
-            {/* ----- AVERAGE LEAD TIME ----- */}
-            <div className='dashboard-kpi-card'>
-              <span className='dashboard-kpi-label'>Average lead time</span>
-              <strong className='dashboard-kpi-value'>
-                {averageLeadTime !=
-                  null ? formatDuration(averageLeadTime) : '-'}
-              </strong>
-            </div>
-            {/* ----- OVERDUE TASKS ----- */}
-            <div className='dashboard-kpi-card'>
-              <span className='dashboard-kpi-label'>Overdue tasks</span>
-              <strong className='dashboard-kpi-value is-danger'>
-                {overview.overdueTasks}
-              </strong>
-            </div>
-          </div>
-        </Widget>
+          items={overviewItems}
+        />
 
         {/* ===== STATUS BREAKDOWN ======================================== */}
-        <Widget
+        <BreakdownWidget
           title='Status breakdown'
           subtitle='Open versus completed work'
           className='dashboard-widget dashboard-widget-status'
-        >
-          <div className='dashboard-breakdown-list'>
-            <div className='dashboard-breakdown-row'>
-              <div className='dashboard-breakdown-header'>
-                <span className='dashboard-breakdown-label'>Open</span>
-                <span className='dashboard-breakdown-value'>
-                  {statusBreakdown.open}
-                </span>
-              </div>
-              <div className='dashboard-bar-track'>
-                <div
-                  className='dashboard-bar-fill is-open'
-                  style={{
-                    width: `${(statusBreakdown.open / totalStatusCount) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className='dashboard-breakdown-row'>
-              <div className='dashboard-breakdown-header'>
-                <span className='dashboard-breakdown-label'>Done</span>
-                <span className='dashboard-breakdown-value'>
-                  {statusBreakdown.done}
-                </span>
-              </div>
-              <div className='dashboard-bar-track'>
-                <div
-                  className='dashboard-bar-fill is-success'
-                  style={{
-                    width: `${(statusBreakdown.done / totalStatusCount) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </Widget>
-
+          items={statusItems}
+        />
         {/* ===== PRIORITY BREAKDOWN ====================================== */}
-        <Widget
+        <BreakdownWidget
           title='Priority breakdown'
           subtitle='Distribution across low, medium and high'
           className='dashboard-widget dashboard-widget-priority'
-        >
-          <div className='dashboard-breakdown-list'>
-            <div className='dashboard-breakdown-row'>
-              <div className='dashboard-breakdown-header'>
-                <span className='dashboard-breakdown-label'>Low</span>
-                <span className='dashboard-breakdown-value'>
-                  {priorityBreakdown.low}
-                </span>
-              </div>
-              <div className='dashboard-bar-track'>
-                <div
-                  className='dashboard-bar-fill is-low'
-                  style={{
-                    width: `${(priorityBreakdown.low / totalPriorityCount) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className='dashboard-breakdown-row'>
-              <div className='dashboard-breakdown-header'>
-                <span className='dashboard-breakdown-label'>Medium</span>
-                <span className='dashboard-breakdown-value'>
-                  {priorityBreakdown.medium}
-                </span>
-              </div>
-              <div className='dashboard-bar-track'>
-                <div
-                  className='dashboard-bar-fill is-medium'
-                  style={{
-                    width: `${(priorityBreakdown.medium / totalPriorityCount) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className='dashboard-breakdown-row'>
-              <div className='dashboard-breakdown-header'>
-                <span className='dashboard-breakdown-label'>High</span>
-                <span className='dashboard-breakdown-value'>
-                  {priorityBreakdown.high}
-                </span>
-              </div>
-              <div className='dashboard-bar-track'>
-                <div
-                  className='dashboard-bar-fill is-danger'
-                  style={{
-                    width: `${(priorityBreakdown.high / totalPriorityCount) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </Widget>
-        <Widget
+          items={priorityItems}
+        />
+        <BreakdownWidget
           title='Most active lists'
           subtitle='Lists with the highest amount of open work'
           className='dashboard-widget dashboard-widget-active-lists'
-        >
-          {mostActiveToDos.length === 0 ? (
-            <p className='dashboard-muted-text'>No active lists yet.</p>
-          ) : (
-            <div className='dashboard-breakdown-list'>
-              {mostActiveToDos.map((toDo) => (
-                <div key={toDo.id} className='dashboard-breakdown-row'>
-                  <div className='dashboard-breakdown-header'>
-                    <span className='dashboard-breakdown-label'>{toDo.title}</span>
-                    <span className='dashboard-breakdown-value'>
-                      {toDo.openTasks} open / {toDo.totalTasks} total
-                    </span>
-                  </div>
-
-                  <div className='dashboard-bar-track'>
-                    <div
-                      className='dashboard-bar-fill'
-                      style={{
-                        width: `${mostActiveToDos[0]?.openTasks
-                          ? (toDo.openTasks / mostActiveToDos[0].openTasks) * 100
-                          : 0
-                          }%`,
-                      }}
-                    />
-                  </div>
-
-                  {toDo.overdueTasks > 0 && (
-                    <p className='dashboard-muted-text'>
-                      {toDo.overdueTasks} overdue
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </Widget>
+          items={mostActiveItems}
+          emptyText='No active lists yet.'
+        />
       </div>
     </div>
   )

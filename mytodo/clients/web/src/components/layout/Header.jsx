@@ -1,12 +1,13 @@
 // mytodo/clients/web/src/components/layout/Header.jsx
 
+import Surface from "../common/Surface"
 import Button from "../common/Button"
 import Brand from "../common/Brand"
 
 
 function Header({ currentUser, onLogout, onGoHome }) {
   return (
-    <header className="app-header surface-card surface-strong">
+    <Surface as="header" variant="bar" className="app-header">
       {/* ===== BRAND ===================================================== */}
       <button
         type="button"
@@ -21,7 +22,7 @@ function Header({ currentUser, onLogout, onGoHome }) {
       {currentUser && (
         <Button onClick={onLogout}>Logout</Button>
       )}
-    </header>
+    </Surface>
   )
 }
 

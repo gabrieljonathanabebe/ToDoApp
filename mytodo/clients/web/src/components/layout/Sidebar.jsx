@@ -1,6 +1,7 @@
 // mytodo/clients/web/src/components/layout/Sidebar.jsx
 
 import { House, ListTodo, LayoutDashboard, Circle } from 'lucide-react'
+import Surface from '../common/Surface'
 
 
 function Sidebar({
@@ -13,15 +14,14 @@ function Sidebar({
   onGoDashboard,
   onOpenToDo,
 }) {
-  console.log('Sidebar toDoSummaries', toDoSummaries)
   return (
-    <aside className="sidebar surface-card">
+    <Surface as='aside' variant='panel' className='sidebar'>
       {currentUser && (
         <p className="sidebar-user">
           Hi, {currentUser.username}
         </p>
       )}
-      <div className="sidebar-section">
+      <div className="sidebar-section sidebar-navigation">
         <p className="sidebar-section-title">Navigation</p>
         <button
           className={`sidebar-link ${currentPage === 'home' ? 'active' : ''}`}
@@ -71,7 +71,7 @@ function Sidebar({
           ))}
         </div>
       </div>
-    </aside>
+    </Surface>
   )
 }
 

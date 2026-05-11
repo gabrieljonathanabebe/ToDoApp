@@ -1,6 +1,6 @@
 // mytodo/clients/web/src/pages/HomePage.jsx
 
-import Widget from '../components/common/Widget'
+import Widget from '../components/widgets/Widget'
 import {
   getOverviewStats,
   getUpcomingTasks,
@@ -9,10 +9,12 @@ import {
 import {
   formatDueDate,
   formatDaysLeft,
-  formatRelativeDatetime,
 } from '../utils/formatters'
-import { House } from 'lucide-react'
+import { House, History, ListTodo } from 'lucide-react'
 import PageHeader from '../components/common/PageHeader'
+import KpiWidget from '../components/widgets/KpiWidget'
+import ToDoLists from '../components/todo/ToDoLists'
+import EmptyState from '../components/common/EmptyState'
 
 
 function HomePage({
@@ -20,6 +22,7 @@ function HomePage({
   workspaceStats,
   toDoSummaries = [],
   toDoDetails = [],
+  onOpenToDo,
 }) {
   const overview = getOverviewStats(
     workspaceStats,
@@ -28,62 +31,46 @@ function HomePage({
   )
   const upcomingTasks = getUpcomingTasks(toDoDetails, 3)
   const recentTodos = getRecentlyUpdatedToDos(toDoSummaries, 3)
-
+  const overviewItems = [
+    {
+      label: 'Open tasks',
+      value: overview.openTasks,
+    },
+    {
+      label: 'Done tasks',
+      value: overview.doneTasks,
+    },
+    {
+      label: 'Overdue tasks',
+      value: overview.overdueTasks,
+      tone: 'danger',
+    },
+    {
+      label: 'To-do lists',
+      value: overview.totalToDos,
+    },
+  ]
 
   return (
     <div className='home-page'>
-      {/* ===== PAGE TITLE ================================================= */}
       <PageHeader title='Home' icon={House} />
-      {/* ===== HOME GRID ================================================== */}
       <div className='home-grid'>
-        {/* ===== WELCOME ================================================== */}
         <Widget
           title={`Welcome back, ${currentUser?.username ?? 'there'}`}
-          subtitle='Here is a quick overview of your current workspace.'
+          subtitle={
+            <>
+              <span>Here is a quick overview of your current workspace.</span>
+              <span>Stay focused on upcoming and overdue work.</span>
+            </>
+          }
           className='home-widget home-widget-welcome'
-        >
-          <div className='home-welcome-copy'>
-            <p className='home-muted-text'>
-              Stay focused on upcoming and overdue work.
-            </p>
-          </div>
-        </Widget>
-
-        {/* ===== OVERVIEW ================================================= */}
-        <Widget
+        />
+        <KpiWidget
           title='Overview'
           subtitle='Your most important numbers at a glance'
           className='home-widget home-widget-overview'
-        >
-          <div className='home-overview-stats'>
-            {/* ----- OPEN TASKS ----- */}
-            <div className='home-stat-card'>
-              <span className='home-stat-label'>Open tasks</span>
-              <strong className='home-stat-value'>{overview.openTasks}</strong>
-            </div>
-
-            {/* ----- DONE TASKS ----- */}
-            <div className='home-stat-card'>
-              <span className='home-stat-label'>Done tasks</span>
-              <strong className='home-stat-value'>{overview.doneTasks}</strong>
-            </div>
-
-            {/* ----- OVERDUE TASKS ----- */}
-            <div className='home-stat-card'>
-              <span className='home-stat-label'>Overdue tasks</span>
-              <strong className='home-stat-value is-danger'>
-                {overview.overdueTasks}
-              </strong>
-            </div>
-
-            {/* ----- TOTAL TODOS ----- */}
-            <div className='home-stat-card'>
-              <span className='home-stat-label'>To-do lists</span>
-              <strong className='home-stat-value'>{overview.totalToDos}</strong>
-            </div>
-          </div>
-        </Widget>
-
+          items={overviewItems}
+        />
         {/* ===== UPCOMING TASKS ========================================== */}
         <Widget
           title='Upcoming tasks'
@@ -107,31 +94,27 @@ function HomePage({
             </div>
           )}
         </Widget>
-
-        {/* ===== RECENTLY UPDATED TODOS ================================== */}
-        <Widget
-          title='Recently updated lists'
-          subtitle='Your latest activity'
-          className='home-widget home-widget-recent'
-        >
-          {recentTodos.length === 0 ? (
-            <p className='home-muted-text'>No recent list activity yet.</p>
-          ) : (
-            <div className='home-list'>
-              {recentTodos.map((todo) => (
-                <div key={todo.id} className='home-list-item'>
-                  <div className='home-list-main'>
-                    <div className='home-list-title'>{todo.title}</div>
-                    <div className='home-list-subtitle'>
-                      Updated {formatRelativeDatetime(todo.updated_at)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Widget>
       </div>
+      <section className='home-section'>
+        <PageHeader
+          title='Recently updated lists'
+          icon={History}
+          variant='section'
+          as='h2'
+        />
+        {recentTodos.length === 0 ? (
+          <EmptyState
+            icon={ListTodo}
+            title='No recent list activity'
+            description='Updated lists will appear here once you start working.'
+          />
+        ) : (
+          <ToDoLists
+            todos={recentTodos}
+            onOpenToDo={onOpenToDo}
+          />
+        )}
+      </section>
     </div>
   )
 }

@@ -1,13 +1,12 @@
 // mytodo/clients/web/src/components/task/TaskCard.jsx
 
-import { useState } from 'react'
-import StatusBadge from './StatusBadge'
 import TaskStatusToggle from './TaskStatusToggle'
-import TaskDeleteButton from './TaskDeleteButton'
 import TaskPriorityStars from './TaskPriorityStars'
 import TaskMeta from './TaskMeta'
-import TaskActionsMenu from './TaskActionsMenu'
-import TaskInfoModal from './TaskInfoModal'
+import InlineTextEditor from '../ui/InlineTextEditor'
+import TaskCardActions from './TaskCardActions'
+import Badge from '../ui/Badge'
+import { taskStatusConfig } from '../../config/taskConfig'
 
 
 function TaskCard({
@@ -18,94 +17,52 @@ function TaskCard({
   onUpdateTaskPriority,
   onUpdateTaskDue
 }) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [editValue, setEditValue] = useState('')
-  const [showInfo, setShowInfo] = useState(false)
-
-  async function handleSave() {
-    const trimmed = editValue.trim()
-    if (!trimmed) {
-      setEditValue(task.description)
-      setIsEditing(false)
-      return
-    }
-    if (trimmed === task.description) {
-      setIsEditing(false)
-      return
-    }
-    await onUpdateTaskDescription(task.id, trimmed)
-    setIsEditing(false)
-  }
-
-  function handleCancel() {
-    setEditValue(task.description)
-    setIsEditing(false)
-  }
+  const status = taskStatusConfig[task.status]
 
   return (
     <div className='task-card'>
-      <div className='task-card-left'>
+      <div className='task-card__status'>
         <TaskStatusToggle task={task} onToggleStatus={onToggleStatus} />
-        <div className='task-card-content'>
-          {isEditing ? (
-            <input
-              className='task-card-input'
-              type='text'
-              value={editValue}
-              autoFocus
-              onChange={(e) => setEditValue(e.target.value)}
-              onBlur={handleSave}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSave()
-                }
-                if (e.key === 'Escape') {
-                  handleCancel()
-                }
-              }}
-            />
-          ) : (
-            <h3
-              className='task-card-title is-editable'
-              onClick={() => {
-                setEditValue(task.description)
-                setIsEditing(true)
-              }}
-              title='Click to edit'
-            >
-              {task.description}
-            </h3>
-          )}
-          <TaskMeta
-            task={task}
-            onUpdateTaskDue={onUpdateTaskDue}
-            className='task-card-meta task-meta-row'
-            showSeparator={true}
+      </div>
+
+      <div className='task-card__main'>
+        <InlineTextEditor
+          as='h3'
+          value={task.description}
+          onSave={(nextDescription) =>
+            onUpdateTaskDescription(task.id, nextDescription)
+          }
+          displayClassName='task-card-title'
+          inputClassName='task-card-input'
+        />
+
+        <TaskMeta
+          task={task}
+          onUpdateTaskDue={onUpdateTaskDue}
+          className='task-card-meta task-meta-row'
+          showSeparator={true}
+        />
+
+        <div className='task-card__secondary'>
+          <TaskPriorityStars
+            value={task.priority}
+            interactive
+            onChange={(newPriority) =>
+              onUpdateTaskPriority(task.id, newPriority)
+            }
           />
+
+          <Badge tone={status?.tone ?? 'default'}>
+            {status?.label ?? task.status}
+          </Badge>
         </div>
       </div>
 
-      <div className='task-card-right'>
-        <TaskPriorityStars
-          value={task.priority}
-          interactive
-          onChange={(newPriority) =>
-            onUpdateTaskPriority(task.id, newPriority)
-          }
+      <div className='task-card__actions'>
+        <TaskCardActions
+          task={task}
+          onDeleteTask={onDeleteTask}
         />
-        <StatusBadge status={task.status} />
-        <div className='task-card-actions'>
-          <TaskActionsMenu
-            onDelete={() => onDeleteTask(task.id)}
-            onOpenInfo={() => setShowInfo(true)}
-          />
-
-          <TaskInfoModal
-            show={showInfo}
-            onClose={() => setShowInfo(false)}
-            task={task}
-          />
-        </div>
       </div>
     </div>
   )
